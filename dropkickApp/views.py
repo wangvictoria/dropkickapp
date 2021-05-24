@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from dropkickApp.models import MyFile
 from django.views import generic
-from .forms import UploadFileForm, ModelFormWithFileField
+from .forms import UploadFileForm
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
@@ -27,11 +27,11 @@ def handle_uploaded_file(f):
 
 def upload_file(request):
     if request.method == 'POST':
-        form = ModelFormWithFileField(request.POST, request.FILES)
-        if form.is_valid():
+        my_form = UploadFileForm(request.POST, request.FILES)
+        if my_form.is_valid():
             # file is saved
-            form.save()
+            my_form.save()
             return HttpResponseRedirect('/success/url/')
     else:
-        form = ModelFormWithFileField()
+        my_form = UploadFileForm()
     return render(request, 'upload.html', {'form': form})

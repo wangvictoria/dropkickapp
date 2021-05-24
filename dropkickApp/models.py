@@ -1,7 +1,7 @@
 from django.db import models
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from .forms import ModelFormWithFileField
+#from .forms import ModelFormWithFileField
 
 # Create your models here.
 
