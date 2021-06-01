@@ -1,0 +1,44 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Dropkick App Home</h1>
+  <p>Welcome to Dropkick, a website developed by <em>Victoria</em>!</p>
+  <h2>Upload your data</h2>
+  <p>The database has the following file counts:</p>
+  <ul>
+    <li><strong>Files:</strong> {{ num_files }}</li>
+  </ul>
+  <form name = "form" enctype = "multipart/form-data" 
+         action = "{% url 'upload' %}" method = "POST" >{% csrf_token %}
+         
+         <div style = "max-width:470px;">
+            <center>  
+               <input type = "text" style = "margin-left:20%;" 
+               placeholder = "Name" name = "name" />
+            </center>
+         </div>
+			
+         <br>
+         
+         <div style = "max-width:470px;">
+            <center> 
+               <input type = "file" style = "margin-left:20%;" 
+                  placeholder = "Picture" name = "picture" />
+            </center>
+         </div>
+			
+         <br>
+         
+         <div style = "max-width:470px;">
+            <center> 
+            
+               <button style = "border:0px;background-color:#4285F4; margin-top:8%; 
+                  height:35px; width:80%; margin-left:19%;" type = "submit" value = "Upload" >
+                  <strong>Upload</strong>
+               </button>
+               
+            </center>
+         </div>
+         
+      </form>
+{% endblock %}
