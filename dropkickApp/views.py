@@ -4,6 +4,8 @@ from django.views import generic
 from .forms import UploadFileForm
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.core.files.storage import FileSystemStorage
+
 
 # Create your views here.
 
@@ -26,12 +28,20 @@ def handle_uploaded_file(f):
             destination.write(chunk)
 
 def upload_file(request):
+    # if request.method == 'POST':
+    #     my_form = UploadFileForm(request.POST, request.FILES)
+    #     if my_form.is_valid():
+    #         # file is saved
+    #         my_form.save()
+    #         return HttpResponseRedirect('/success/url/')
+    # else:
+    #     my_form = UploadFileForm()
+    # return render(request, 'upload.html', {'form': form})
+
     if request.method == 'POST':
-        my_form = UploadFileForm(request.POST, request.FILES)
-        if my_form.is_valid():
-            # file is saved
-            my_form.save()
-            return HttpResponseRedirect('/success/url/')
-    else:
-        my_form = UploadFileForm()
-    return render(request, 'upload.html', {'form': form})
+        uploaded_file = request.FILES['document']
+        #print(uploaded_file.name)
+        #print(uploaded_file.size)
+        fs = FileSystemStorage()
+        fs.save(uploaded_file.name, uploaded_file)
+    return render(request,'upload.html')
