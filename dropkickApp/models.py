@@ -13,7 +13,7 @@ class MyFile(models.Model):
     """Model representing a file that the user uploads."""
     name = models.CharField('file name', max_length=500, help_text='Enter file output name.', blank=True)
     upload = models.FileField(upload_to='uploads/', help_text='Only H5AD files are supported.')
-    uploaded_at = models.DateTimeField('upload date', auto_now=True)
+    uploaded_at = models.DateTimeField('upload date', auto_now_add=True)
     
     class Meta:
         verbose_name = "file"
