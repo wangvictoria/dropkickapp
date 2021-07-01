@@ -2,6 +2,7 @@
 
 {% block form %}
 <!-- Upload file -->
+<<<<<<< Updated upstream
                     <form name = "form" enctype = "multipart/form-data" 
          action = "{% url 'upload' %}" method = "POST" >{% csrf_token %}
          
@@ -19,11 +20,28 @@
             </center>
          </div>
       
+=======
+
+    <form method="post" enctype='multipart/form-data'>{% csrf_token %}
+         
+    <div style = "max-width:470px;">
+    <input type = "text" style = "margin-left:20%;" placeholder = "Name" name = "name" />
+         </div>
+         <br>
+         <div style = "max-width:470px;">
+            <center> 
+               <input type = "file" style = "margin-left:20%;" placeholder = "Upload" name = "document" />
+            </center>
+         </div>
+>>>>>>> Stashed changes
          <br>
          
          <div style = "max-width:470px;">
             <center> 
+<<<<<<< Updated upstream
             
+=======
+>>>>>>> Stashed changes
                <button style = "border:0px;background-color:#336699; margin-top:8%; 
                   height:35px; width:80%; margin-left:19%;" type = "submit" value = "upload" >
                   <strong>Upload</strong>

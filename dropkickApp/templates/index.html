@@ -1,6 +1,7 @@
 {% extends "base_generic.html" %}
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 {% block content %}
   <h1>Dropkick App Home</h1>
   <p>Welcome to Dropkick, a website developed by <em>Victoria</em>!</p>
@@ -47,14 +48,35 @@
          </div>
       
 >>>>>>> Stashed changes
+=======
+{% block form %}
+<!-- Upload file -->
+
+    <form method="post" enctype='multipart/form-data'>{% csrf_token %}
+         
+    <div style = "max-width:470px;">
+    <input type = "text" style = "margin-left:20%;" placeholder = "Name" name = "name" />
+         </div>
+         <br>
+         <div style = "max-width:470px;">
+            <center> 
+               <input type = "file" style = "margin-left:20%;" placeholder = "Upload" name = "document" />
+            </center>
+         </div>
+>>>>>>> Stashed changes
          <br>
          
          <div style = "max-width:470px;">
             <center> 
+<<<<<<< Updated upstream
             
 <<<<<<< Updated upstream
                <button style = "border:0px;background-color:#4285F4; margin-top:8%; 
                   height:35px; width:80%; margin-left:19%;" type = "submit" value = "Upload" >
+=======
+               <button style = "border:0px;background-color:#336699; margin-top:8%; 
+                  height:35px; width:80%; margin-left:19%;" type = "submit" value = "upload" >
+>>>>>>> Stashed changes
 =======
                <button style = "border:0px;background-color:#336699; margin-top:8%; 
                   height:35px; width:80%; margin-left:19%;" type = "submit" value = "upload" >
