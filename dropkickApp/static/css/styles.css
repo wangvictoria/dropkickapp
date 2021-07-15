@@ -10927,11 +10927,9 @@ p.lead {
   #sideNav .navbar-collapse .navbar-nav .nav-item {
     display: block;
   }
-  .navbar li a, .navbar .navbar-brand { 
-    color: #d5d5d5 !important;
+  #sideNav .navbar-collapse .navbar-nav .nav-item .nav-link {
+    display: block;
   }
-  .navbar-nav li a:hover {
-    color: #fff !important;
 }
 .social-icons .social-icon {
   display: inline-flex;
@@ -10973,10 +10971,12 @@ section.resume-section .resume-section-content {
   section.resume-section {
     min-height: 100vh;
   }
-  .navbar-nav li.active a {
-    color: #fff !important;
-    background-color: #29292c !important;
+}
+@media (min-width: 992px) {
+  section.resume-section {
+    padding-left: 3rem;
+    padding-right: 3rem;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
   }
-  .navbar-default .navbar-toggle {
-    border-color: transparent;
-  }
+}

@@ -41,6 +41,16 @@ def upload_file(request):
         fs.save(uploaded_file.name, uploaded_file)
     return render(request,'upload.html')
 
+def process(request):
+    model = MyFile
+    num_files = MyFile.objects.all().count()
+    
+    context = {
+        'num_files': num_files,
+    }
+    return render(request, 'process.html')
+
+
 # def run_script():
 #     adata = sc.read("../media/3907_S1_jointcluster.h5ad")
 #     # plot QC metrics
