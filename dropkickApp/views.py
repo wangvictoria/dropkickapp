@@ -54,7 +54,11 @@ def labels(adata):
 def index(request):
     """View function for home page of site."""
     
-    context = {'qc_plot': None, 'score_plot': None, 'coef_plot': None, 'labels': None}
+    context = {
+        'title': None,
+        'qc_text': None, 'score_text': None, 'coef_text': None, 'labels_text': None,
+        'qc_plot': None, 'score_plot': None, 'coef_plot': None, 'labels': None,
+    }
     
     # upload file
     if request.method == 'POST':
@@ -69,6 +73,10 @@ def index(request):
         
         # run dropkick
         #adata_model = dk.dropkick(adata, n_jobs=5)
+        
+        # label data results
+        context['title'] = 'Your Results'
+        context['qc_text'] = 'QC Plot'
 
         # run scripts and create plots
         

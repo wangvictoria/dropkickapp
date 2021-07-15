@@ -32,12 +32,18 @@
 {% block process %}
 
 <br><br>
+<h3 class="mb-0">{{ title }}</h3>
+<br>
+<div class="subheading mb-5">{{ qc_text }}</div>
 <img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '800', width = '800'>
 <br>
+<div class="subheading mb-5">{{ score_text }}</div>
 <img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '800', width = '800'>
 <br>
+<div class="subheading mb-5">{{ coef_text }}</div>
 <img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '800', width = '800'>
 <br>
+<div class="subheading mb-5">{{ labels_text }}</div>
 <img src='data:image/png;base64, {{ labels }}', alt = 'Dropkick Labels', height = '800', width = '800'>
 
 {% endblock %}
