@@ -4,18 +4,27 @@
 <!-- Upload file -->
 
     <form method="post" enctype='multipart/form-data'>{% csrf_token %}
-         
+        
+    <!-- Name file -->
     <div style = "max-width:470px;">
     <input type = "text" style = "margin-left:20%;" placeholder = "Name" name = "name" />
          </div>
          <br>
+        <!-- Upload file -->
          <div style = "max-width:470px;">
             <center> 
                <input type = "file" style = "margin-left:20%;" placeholder = "Upload" name = "document" />
             </center>
          </div>
          <br>
-         
+        <!-- Checkbox -->
+        <div style = "max-width:470px;">
+                <input type="checkbox" style = "margin-left:20%;" id="qc_plot" name="qc_plot" value="qc_plot">
+                <label for="qc_plot"> QC Plot</label><br>
+                <input type="checkbox" style = "margin-left:20%;" id="filter" name="filter" value="filter">
+                <label for="filter"> Dropkick Filter</label><br>
+         </div>
+         <!-- Upload button -->
          <div style = "max-width:470px;">
             <center> 
                <button style = "border:0px;background-color:#336699; margin-top:8%; 
@@ -27,23 +36,35 @@
          </div>
          
       </form>
+    <!-- Progress bar HTML -->
 {% endblock %}
 
 {% block process %}
 
+{% if title %}
 <br><br>
 <h3 class="mb-0">{{ title }}</h3>
 <br>
+{% endif %}
+{% if qc_text %}
 <div class="subheading mb-5">{{ qc_text }}</div>
 <img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '800', width = '800'>
 <br>
+{% endif %}
+{% if score_text %}
 <div class="subheading mb-5">{{ score_text }}</div>
 <img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '800', width = '800'>
 <br>
+{% endif %}
+{% if coef_plot %}
 <div class="subheading mb-5">{{ coef_text }}</div>
 <img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '800', width = '800'>
 <br>
+{% endif %}
+{% if labels_text %}
 <div class="subheading mb-5">{{ labels_text }}</div>
 <img src='data:image/png;base64, {{ labels }}', alt = 'Dropkick Labels', height = '800', width = '800'>
+<br>
+{% endif %}
 
 {% endblock %}

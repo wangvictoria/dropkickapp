@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from dropkickApp.models import MyFile
 from django.views import generic
-from .forms import UploadFileForm
+from .forms import UploadFileForm, CheckboxForm
 from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage
 
@@ -63,11 +63,12 @@ def index(request):
     # upload file
     if request.method == 'POST':
         uploaded_file = request.FILES['document']
+        #uploaded_file.name = request.FILES['name']
         #print(uploaded_file.name)
         #print(uploaded_file.size)
         fs = FileSystemStorage()
         fs.save(uploaded_file.name, uploaded_file)
-    
+        
         # read data
         adata = sc.read('media/' + uploaded_file.name)
         
@@ -80,10 +81,19 @@ def index(request):
 
         # run scripts and create plots
         
-        context['qc_plot'] = qc_plot(adata)
-        #context['score_plot'] = score_plot(adata)
-        #context['coef_plot'] = coef_plot(adata)
-        #context['labels'] = labels(adata)
+        # checkbox bool
+        form = CheckboxForm(request.POST or None)
+        if form.is_valid():
+            if request.POST['qc_plot']:
+                # qc_plot checkbox was checked
+                context['qc_plot'] = qc_plot(adata)
+            #if request.POST['filter']:
+                # filter checkbox was checked
+                #context['score_plot'] = score_plot(adata)
+                #context['coef_plot'] = coef_plot(adata)
+                #context['labels'] = labels(adata)
+        else:
+            form = CheckboxForm
         
     return render(request,'index.html', context)
 
