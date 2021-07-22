@@ -19,15 +19,15 @@
          <br>
         <!-- Checkbox -->
         <div style = "max-width:470px;">
-                <input type="checkbox" style = "margin-left:20%;" id="qc_plot" name="qc_plot" value="qc_plot">
+                <input type="checkbox" style = "margin-left:20%;" id="qc_plot" name="qc_plot" value="qc_plot" checked>
                 <label for="qc_plot"> QC Plot</label><br>
-                <input type="checkbox" style = "margin-left:20%;" id="filter" name="filter" value="filter">
+                <input type="checkbox" style = "margin-left:20%;" id="filter" name="filter" value="filter" checked>
                 <label for="filter"> Dropkick Filter</label><br>
          </div>
          <!-- Upload button -->
          <div style = "max-width:470px;">
             <center> 
-               <button style = "border:0px;background-color:#336699; margin-top:8%; 
+               <button style = "border:0px; color: white; background-color:#336699; margin-top:8%; 
                   height:35px; width:80%; margin-left:19%;" type = "submit" value = "upload" >
                   <strong>Upload</strong>
                </button>
@@ -48,22 +48,23 @@
 {% endif %}
 {% if qc_text %}
 <div class="subheading mb-5">{{ qc_text }}</div>
-<img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '800', width = '800'>
+<img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '500', width = '1000'>
 <br>
 {% endif %}
 {% if score_text %}
 <div class="subheading mb-5">{{ score_text }}</div>
-<img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '800', width = '800'>
+<img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '600', width = '600'>
 <br>
 {% endif %}
 {% if coef_plot %}
 <div class="subheading mb-5">{{ coef_text }}</div>
-<img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '800', width = '800'>
+<img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '600', width = '600'>
 <br>
 {% endif %}
 {% if labels_text %}
 <div class="subheading mb-5">{{ labels_text }}</div>
-<img src='data:image/png;base64, {{ labels }}', alt = 'Dropkick Labels', height = '800', width = '800'>
+<button style = "border:0px; color: white; background-color:#336699; margin-top:8%; height:35px; width:80%; margin-left:19%;" 
+        type="submit"> <a href="{{ labels }}">Download CSV</a> </button>
 <br>
 {% endif %}
 

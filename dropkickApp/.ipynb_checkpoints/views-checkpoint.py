@@ -2,8 +2,10 @@ from django.shortcuts import render, get_object_or_404
 from dropkickApp.models import MyFile
 from django.views import generic
 from .forms import UploadFileForm, CheckboxForm
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.core.files.storage import FileSystemStorage
+import csv
+import mimetypes
 
 import scanpy as sc; sc.set_figure_params(color_map="viridis", frameon=False)
 import dropkick as dk
@@ -25,31 +27,28 @@ def qc_plot(adata):
     uri = urllib.parse.quote(string)
     return uri
 
-def score_plot(adata):
-    score_plt = dk.score_plot(adata)
-    
-    # display chart
-    buf = io.BytesIO()
-    score_plt.savefig(buf, format = 'png')
-    buf.seek(0)
-    string = base64.b64encode(buf.read())
-    uri = urllib.parse.quote(string)
-    return uri
-
-def coef_plot(adata):
-    coef_plt = dk.coef_plot(adata)
-    
-    # display chart
-    buf = io.BytesIO()
-    coef_plt.savefig(buf, format = 'png')
-    buf.seek(0)
-    string = base64.b64encode(buf.read())
-    uri = urllib.parse.quote(string)
-    return uri
-
 def labels(adata):
     adata_model = dk.dropkick(adata, n_jobs=5)
-    return adata_model
+    
+#     coef_plt = dk.coef_plot(adata)
+#     # display chart
+#     buf_coef = io.BytesIO()
+#     coef_plt.savefig(buf_coef, format = 'png')
+#     buf_coef.seek(0)
+#     string_coef = base64.b64encode(buf_coef.read())
+#     uri_coef = urllib.parse.quote(string_coef)
+    
+    adata_score = dk.recipe_dropkick(adata, n_hvgs=None, verbose=False, filter=True, min_genes=50)
+    score_plt = dk.score_plot(adata_score)
+    # display chart
+    buf_score = io.BytesIO()
+    score_plt.savefig(buf_score, format = 'png')
+    buf_score.seek(0)
+    string_score = base64.b64encode(buf_score.read())
+    uri_score = urllib.parse.quote(string_score)
+    
+    
+    return adata.obs, uri_score
 
 def index(request):
     """View function for home page of site."""
@@ -72,8 +71,6 @@ def index(request):
         # read data
         adata = sc.read('media/' + uploaded_file.name)
         
-        # run dropkick
-        #adata_model = dk.dropkick(adata, n_jobs=5)
         
         # label data results
         context['title'] = 'Your Results'
@@ -87,11 +84,28 @@ def index(request):
             if request.POST['qc_plot']:
                 # qc_plot checkbox was checked
                 context['qc_plot'] = qc_plot(adata)
-            #if request.POST['filter']:
+            if request.POST['filter']:
                 # filter checkbox was checked
-                #context['score_plot'] = score_plot(adata)
-                #context['coef_plot'] = coef_plot(adata)
-                #context['labels'] = labels(adata)
+                # run dropkick
+                context['score_text'] = 'Score Plot'
+                context['coef_text'] = 'Coef Plot'
+                context['labels_text'] = 'Dropkick Labels'
+                df, context['score_plot'] = labels(adata)
+                
+                # convert dataframe to csv
+                fl_path = 'media/'
+                filename = uploaded_file.name + '_dropkick.csv'
+                df.to_csv(fl_path + filename)
+                #response = StreamingHttpResponse(fl_path + filename, content_type="text/csv")
+                #response['Content-Disposition'] = 'attachment; filename="pythoncircle-dot-com.csv"'
+#                 fl_path = 'media/'
+#                 filename = uploaded_file.name + '_dropkick.csv'
+#                 df.to_csv(fl_path + filename)
+#                 fl = open(fl_path, filename)
+#                 response = HttpResponse(fl, content_type=mime_type)
+#                 response['Content-Disposition'] = "attachment; filename=%s" % filename
+                #context['labels'] = response
+                
         else:
             form = CheckboxForm
         
