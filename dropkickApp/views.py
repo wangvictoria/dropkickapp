@@ -30,13 +30,13 @@ def qc_plot(adata):
 def labels(adata):
     adata_model = dk.dropkick(adata, n_jobs=5)
     
-#     coef_plt = dk.coef_plot(adata)
-#     # display chart
-#     buf_coef = io.BytesIO()
-#     coef_plt.savefig(buf_coef, format = 'png')
-#     buf_coef.seek(0)
-#     string_coef = base64.b64encode(buf_coef.read())
-#     uri_coef = urllib.parse.quote(string_coef)
+    coef_plt = dk.coef_plot(adata)
+    # display chart
+    buf_coef = io.BytesIO()
+    coef_plt.savefig(buf_coef, format = 'png')
+    buf_coef.seek(0)
+    string_coef = base64.b64encode(buf_coef.read())
+    uri_coef = urllib.parse.quote(string_coef)
     
     adata_score = dk.recipe_dropkick(adata, n_hvgs=None, verbose=False, filter=True, min_genes=50)
     score_plt = dk.score_plot(adata_score)
@@ -48,7 +48,7 @@ def labels(adata):
     uri_score = urllib.parse.quote(string_score)
     
     
-    return adata.obs, uri_score
+    return adata.obs, uri_score, uri_coef
 
 def index(request):
     """View function for home page of site."""
@@ -88,16 +88,22 @@ def index(request):
                 # filter checkbox was checked
                 # run dropkick
                 context['score_text'] = 'Score Plot'
-                context['coef_text'] = 'Coef Plot'
+                context['coef_text'] = 'Coefficient Plot'
                 context['labels_text'] = 'Dropkick Labels'
-                df, context['score_plot'] = labels(adata)
+                df, context['score_plot'], context['coef_plot'] = labels(adata)
                 
                 # convert dataframe to csv
                 fl_path = 'media/'
                 filename = uploaded_file.name + '_dropkick.csv'
                 df.to_csv(fl_path + filename)
+                
+                #content = file(filename).read()
+                #response = HttpResponse(content, content_type='text/csv')
+                #response['Content-Length'] = os.path.getsize(filename)
+                #response['Content-Disposition'] = 'attachment; filename=%s' % filename
+                
                 #response = StreamingHttpResponse(fl_path + filename, content_type="text/csv")
-                #response['Content-Disposition'] = 'attachment; filename="pythoncircle-dot-com.csv"'
+                #response['Content-Disposition'] = 'attachment; filename=%s' %filename
 #                 fl_path = 'media/'
 #                 filename = uploaded_file.name + '_dropkick.csv'
 #                 df.to_csv(fl_path + filename)
@@ -110,6 +116,14 @@ def index(request):
             form = CheckboxForm
         
     return render(request,'index.html', context)
+
+def download_file(request):
+    # response content type
+    response = HttpResponse(content_type='text/csv')
+
+    #decide the file name
+    response['Content-Disposition'] = 'attachment; filename="dropkick_filter.csv"'
+    return response
 
 #     # Generate count of files
 #     num_files = MyFile.objects.all().count()
