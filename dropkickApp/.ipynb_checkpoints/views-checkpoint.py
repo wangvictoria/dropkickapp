@@ -95,7 +95,7 @@ def index(request):
                 # convert dataframe to csv
                 fl_path = 'media/'
                 filename = uploaded_file.name + '_dropkick.csv'
-                df.to_csv(fl_path + filename)
+                df.to_csv('media/dropkick_filter.csv')
                 
                 #content = file(filename).read()
                 #response = HttpResponse(content, content_type='text/csv')
