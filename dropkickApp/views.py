@@ -5,7 +5,7 @@ from .forms import UploadFileForm, CheckboxForm
 from django.http import HttpResponse, StreamingHttpResponse
 from django.core.files.storage import FileSystemStorage
 import csv
-import mimetypes
+from django.http import FileResponse
 
 import scanpy as sc; sc.set_figure_params(color_map="viridis", frameon=False)
 import dropkick as dk
@@ -61,65 +61,69 @@ def index(request):
     
     # upload file
     if request.method == 'POST':
-        uploaded_file = request.FILES['document']
-        #uploaded_file.name = request.FILES['name']
-        #print(uploaded_file.name)
-        #print(uploaded_file.size)
-        fs = FileSystemStorage()
-        fs.save(uploaded_file.name, uploaded_file)
-        
-        # read data
-        adata = sc.read('media/' + uploaded_file.name)
-        
-        
-        # label data results
-        context['title'] = 'Your Results'
-        context['qc_text'] = 'QC Plot'
+        if 'document' in request.FILES:
+            uploaded_file = request.FILES['document']
+            #uploaded_file.name = request.FILES['name']
+            #print(uploaded_file.name)
+            #print(uploaded_file.size)
+            fs = FileSystemStorage()
+            fs.save(uploaded_file.name, uploaded_file)
 
-        # run scripts and create plots
-        
-        # checkbox bool
-        form = CheckboxForm(request.POST or None)
-        if form.is_valid():
-            if request.POST['qc_plot']:
-                # qc_plot checkbox was checked
-                context['qc_plot'] = qc_plot(adata)
-            if request.POST['filter']:
-                # filter checkbox was checked
-                # run dropkick
-                context['score_text'] = 'Score Plot'
-                context['coef_text'] = 'Coefficient Plot'
-                context['labels_text'] = 'Dropkick Labels'
-                df, context['score_plot'], context['coef_plot'] = labels(adata)
-                
-                # convert dataframe to csv
-                fl_path = 'media/'
-                filename = uploaded_file.name + '_dropkick.csv'
-                df.to_csv('media/dropkick_filter.csv')
-                
-                #content = file(filename).read()
-                #response = HttpResponse(content, content_type='text/csv')
-                #response['Content-Length'] = os.path.getsize(filename)
-                #response['Content-Disposition'] = 'attachment; filename=%s' % filename
-                
-                #response = StreamingHttpResponse(fl_path + filename, content_type="text/csv")
-                #response['Content-Disposition'] = 'attachment; filename=%s' %filename
-#                 fl_path = 'media/'
-#                 filename = uploaded_file.name + '_dropkick.csv'
-#                 df.to_csv(fl_path + filename)
-#                 fl = open(fl_path, filename)
-#                 response = HttpResponse(fl, content_type=mime_type)
-#                 response['Content-Disposition'] = "attachment; filename=%s" % filename
-                #context['labels'] = response
-                
-        else:
-            form = CheckboxForm
+            # read data
+            adata = sc.read('media/' + uploaded_file.name)
+
+
+            # label data results
+            context['title'] = 'Your Results'
+            context['qc_text'] = 'QC Plot'
+
+            # run scripts and create plots
+
+            # checkbox bool
+            form = CheckboxForm(request.POST or None)
+            if form.is_valid():
+                if request.POST['qc_plot']:
+                    # qc_plot checkbox was checked
+                    context['qc_plot'] = qc_plot(adata)
+                if request.POST['filter']:
+                    # filter checkbox was checked
+                    # run dropkick
+                    context['score_text'] = 'Score Plot'
+                    context['coef_text'] = 'Coefficient Plot'
+                    context['labels_text'] = 'Dropkick Labels'
+                    df, context['score_plot'], context['coef_plot'] = labels(adata)
+
+                    # convert dataframe to csv
+                    fl_path = 'media/'
+                    filename = uploaded_file.name + '_dropkick.csv'
+                    df.to_csv('media/dropkick_filter.csv')
+
+                    #content = file(filename).read()
+                    #response = HttpResponse(content, content_type='text/csv')
+                    #response['Content-Length'] = os.path.getsize(filename)
+                    #response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+                    #response = StreamingHttpResponse(fl_path + filename, content_type="text/csv")
+                    #response['Content-Disposition'] = 'attachment; filename=%s' %filename
+    #                 fl_path = 'media/'
+    #                 filename = uploaded_file.name + '_dropkick.csv'
+    #                 df.to_csv(fl_path + filename)
+    #                 fl = open(fl_path, filename)
+    #                 response = HttpResponse(fl, content_type=mime_type)
+    #                 response['Content-Disposition'] = "attachment; filename=%s" % filename
+                    #context['labels'] = response
+
+            else:
+                form = CheckboxForm
         
     return render(request,'index.html', context)
 
 def download_file(request):
     # response content type
-    response = HttpResponse(content_type='text/csv')
+    #response = HttpResponse(content_type='text/csv')
+    file = open('media/dropkick_filter.csv', 'rb') # Read the file in binary mode, this file must exist
+    response = FileResponse(file)
+    #response['Content-Type'] = 'application/application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
     #decide the file name
     response['Content-Disposition'] = 'attachment; filename="dropkick_filter.csv"'

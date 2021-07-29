@@ -5,15 +5,16 @@
 
     <form method="post" enctype='multipart/form-data'>{% csrf_token %}
         
-    <!-- Name file -->
+    <!-- Name file
     <div style = "max-width:470px;">
     <input type = "text" style = "margin-left:20%;" placeholder = "Name" name = "name" />
          </div>
          <br>
+     -->
         <!-- Upload file -->
          <div style = "max-width:470px;">
             <center> 
-               <input type = "file" style = "margin-left:20%;" placeholder = "Upload" name = "document" />
+               <input type = "file" style = "margin-left:0%;" placeholder = "Upload" name = "document" />
             </center>
          </div>
          <br>
@@ -26,13 +27,18 @@
          </div>
          <!-- Upload button -->
          <div style = "max-width:470px;">
-            <center> 
-               <button style = "border:0px; color: white; background-color:#336699; margin-top:8%; 
+            <!--<center>-->
+               <!--<button style = "border:0px; color: white; background-color:#336699; margin-top:8%; 
                   height:35px; width:80%; margin-left:19%;" type = "submit" value = "upload" >
                   Upload
+               </button>-->
+                <br>
+                <button class = "btn btn-primary" style = "color:#fff;margin-left:15%;" type = "submit" value = "upload" >
+                    <i class="fas fa-upload"></i>
+                Upload
                </button>
                
-            </center>
+            <!--</center>-->
          </div>
          
       </form>
@@ -63,7 +69,7 @@
 {% endif %}
 {% if labels_text %}
 <div class="subheading mb-5">{{ labels_text }}</div>
-<button type = 'button'><a class="social-icon" href="{% url 'download' %}"><i class="fas fa-download"></i>Download CSV</a></button>
+<a class="btn btn-primary" href="#" style="color:#ffffff;"><i class="fas fa-download"></i> Download CSV</a>
 <br>
 {% endif %}
 
