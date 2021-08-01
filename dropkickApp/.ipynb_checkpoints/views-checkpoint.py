@@ -30,23 +30,22 @@ def qc_plot(adata):
 def labels(adata):
     adata_model = dk.dropkick(adata, n_jobs=5)
     
+    # display coefficient plot
     coef_plt = dk.coef_plot(adata)
-    # display chart
     buf_coef = io.BytesIO()
     coef_plt.savefig(buf_coef, format = 'png')
     buf_coef.seek(0)
     string_coef = base64.b64encode(buf_coef.read())
     uri_coef = urllib.parse.quote(string_coef)
     
+    # display score plot
     adata_score = dk.recipe_dropkick(adata, n_hvgs=None, verbose=False, filter=True, min_genes=50)
     score_plt = dk.score_plot(adata_score)
-    # display chart
     buf_score = io.BytesIO()
     score_plt.savefig(buf_score, format = 'png')
     buf_score.seek(0)
     string_score = base64.b64encode(buf_score.read())
     uri_score = urllib.parse.quote(string_score)
-    
     
     return adata.obs, uri_score, uri_coef
 
@@ -63,21 +62,15 @@ def index(request):
     if request.method == 'POST':
         if 'document' in request.FILES:
             uploaded_file = request.FILES['document']
-            #uploaded_file.name = request.FILES['name']
-            #print(uploaded_file.name)
-            #print(uploaded_file.size)
             fs = FileSystemStorage()
             fs.save(uploaded_file.name, uploaded_file)
 
             # read data
             adata = sc.read('media/' + uploaded_file.name)
 
-
             # label data results
             context['title'] = 'Your Results'
             context['qc_text'] = 'QC Plot'
-
-            # run scripts and create plots
 
             # checkbox bool
             form = CheckboxForm(request.POST or None)
@@ -98,35 +91,24 @@ def index(request):
                     filename = uploaded_file.name + '_dropkick.csv'
                     df.to_csv('media/dropkick_filter.csv')
 
-                    #content = file(filename).read()
-                    #response = HttpResponse(content, content_type='text/csv')
-                    #response['Content-Length'] = os.path.getsize(filename)
-                    #response['Content-Disposition'] = 'attachment; filename=%s' % filename
-
-                    #response = StreamingHttpResponse(fl_path + filename, content_type="text/csv")
-                    #response['Content-Disposition'] = 'attachment; filename=%s' %filename
-    #                 fl_path = 'media/'
-    #                 filename = uploaded_file.name + '_dropkick.csv'
-    #                 df.to_csv(fl_path + filename)
-    #                 fl = open(fl_path, filename)
-    #                 response = HttpResponse(fl, content_type=mime_type)
-    #                 response['Content-Disposition'] = "attachment; filename=%s" % filename
-                    #context['labels'] = response
-
             else:
                 form = CheckboxForm
         
     return render(request,'index.html', context)
 
 def download_file(request):
-    # response content type
-    #response = HttpResponse(content_type='text/csv')
     file = open('media/dropkick_filter.csv', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
-    #response['Content-Type'] = 'application/application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
-    #decide the file name
+    # decide the file name
     response['Content-Disposition'] = 'attachment; filename="dropkick_filter.csv"'
+    return response
+
+def download_sample(request):
+    file = open('media/t_4k_small_dropkick_scores.csv', 'rb') # Read the file in binary mode, this file must exist
+    response = FileResponse(file)
+    
+    response['Content-Disposition'] = 'attachment; filename="t_4k_small_dropkick_scores.csv"'
     return response
 
 #     # Generate count of files
