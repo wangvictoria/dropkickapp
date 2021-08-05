@@ -1,6 +1,38 @@
 {% extends "base_generic.html" %}
 
 {% block form %}
+<script type="text/javascript">
+
+function customCheck() {
+    if (document.getElementById('custom').checked) {
+        document.getElementById('ifCustom').style.display = 'block';
+    }
+    else document.getElementById('ifCustom').style.display = 'none';
+
+}
+    
+function dropkickCheck() {
+    if (document.getElementById('dropkick').checked) {
+        document.getElementById('ifDropkick').style.display = 'block';
+    }
+    else document.getElementById('ifDropkick').style.display = 'none';
+
+}
+    
+$(document).ready(function(){
+    $('[tool-tip-toggle="tooltip-demo"]').tooltip({
+        placement : 'top'
+    });
+});
+
+const theButton = document.querySelector(".btn");
+
+theButton.addEventListener("click", () => {
+    theButton.classList.add("btn--loading");
+});
+
+</script>
+
 <!-- Upload file -->
 
     <form method="post" enctype='multipart/form-data'>{% csrf_token %}
@@ -19,12 +51,47 @@
          </div>
          <br>
         <!-- Checkbox -->
-        <div style = "max-width:470px;">
+        <div style = "max-width:470px;"> <!-- max width: 470px -->
                 <input type="checkbox" style = "margin-left:20%;" id="qc_plot" name="qc_plot" value="qc_plot" checked>
                 <label for="qc_plot"> QC Plot</label><br>
-                <input type="checkbox" style = "margin-left:20%;" id="filter" name="filter" value="filter" checked>
-                <label for="filter"> Dropkick Filter</label><br>
-         </div>
+                <input type="checkbox" style = "margin-left:20%;" id="dropkick" name="dropkick" value="dropkick" onclick="javascript:dropkickCheck();" checked>
+                <label for="dropkick"> Dropkick Filter</label><br>
+                <!-- Default or Custom Settings -->
+            <div id="ifDropkick" style="display:block">
+                <input type="radio" style = "margin-left:25%;" id="default" name="param" value="default" onclick="javascript:customCheck();" checked>
+                <label for="default"> Default Parameters</label><br>
+                <input type="radio" style = "margin-left:25%;" id="custom" name="param" value="custom" onclick="javascript:customCheck();">
+                <label for="custom"> Custom Parameters</label><br>
+                <!-- Custom parameters -->
+                <div id="ifCustom" style="display:none">
+                    
+                    <label for="min_genes" style = "margin-left:30%;"> Minimum genes</label>
+                    <span class="fas fa-info-circle" tooltip-glyph="glyph-tooltip-demo" data-original-title="cloud icon"></span>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='50' id='min_genes' name='min_genes'><br>
+                    
+                    <label for="mito_names" style = "margin-left:30%;"> Mitochondria Names</label><input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='^mt-' id='mito_names' name='mito_names'><br>
+                    <label for="n_ambient" style = "margin-left:30%;"> Number of Ambient Genes</label><input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='10' id='n_ambient' name='n_ambient'><br>
+                    <label for="n_hvgs" style = "margin-left:30%;"> Number of HVGs</label><input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='2000' id='n_hvgs' name='n_hvgs'><br>
+                    <label for="metrics" style = "margin-left:30%;"> Metrics</label><input type='text' style = "margin-left:1%;width:220px;height:25px" placeholder='arcsinh_n_genes_by_counts' id='metrics' name='metrics'><br>
+                    <label for="thresh_methods" style = "margin-left:30%;"> Threshold Methods</label>
+                    <select name="thresh_methods" id="thresh_methods">
+                        <option value="multiotsu">Multiotsu</option>
+                        <option value="otsu">Otsu</option>
+                        <option value="li">Li</option>
+                        <option value="mean">Mean</option>
+                    </select><br>
+                    <label for="directions" style = "margin-left:30%;"> Directions</label>
+                    <select name="directions" id="directions">
+                        <option value="above">Above</option>
+                        <option value="below">Below</option>
+                    </select><br>
+                    <label for="alphas" style = "margin-left:30%;"> Alphas</label><input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='0.1' id='alphas' name='alphas'><br>
+                    <label for="max_iter" style = "margin-left:30%;"> Maximum Iterations</label><input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='2000' id='max_iter' name='max_iter'><br>
+                    <label for="n_jobs" style = "margin-left:30%;"> Number of Threads</label><input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='2' id='n_jobs' name='n_jobs'><br>
+                    <label for="seed" style = "margin-left:30%;"> Seed</label><input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='18' id='seed' name='seed'>
+                </div>
+             </div>
+        </div>
          <!-- Upload button -->
          <div style = "max-width:470px;">
             <!--<center>-->
@@ -33,9 +100,8 @@
                   Upload
                </button>-->
                 <br>
-                <button class = "btn btn-primary" style = "color:#fff;margin-left:15%;" type = "submit" value = "upload" >
-                    <i class="fas fa-upload"></i>
-                Upload
+                <button class = "btn btn-primary" style = "color:#fff;margin-left:15%;" type = "submit" value = "upload" onclick="this.classList.toggle('btn--loading')">
+                    <span class="btn__text"><i class="fas fa-upload"></i> Upload</span>
                </button>
                
             <!--</center>-->

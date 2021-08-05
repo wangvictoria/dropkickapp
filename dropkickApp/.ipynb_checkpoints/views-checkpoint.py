@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from dropkickApp.models import MyFile
 from django.views import generic
-from .forms import UploadFileForm, CheckboxForm
+from .forms import UploadFileForm, CheckboxForm, CustomForm
 from django.http import HttpResponse, StreamingHttpResponse
 from django.core.files.storage import FileSystemStorage
 import csv
@@ -27,8 +27,20 @@ def qc_plot(adata):
     uri = urllib.parse.quote(string)
     return uri
 
-def labels(adata):
-    adata_model = dk.dropkick(adata, n_jobs=5)
+def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, metrics, thresh_methods, directions, alphas, max_iter, n_jobs, seed):
+    adata_model = dk.dropkick(
+        adata, 
+        min_genes=min_genes, 
+        mito_names=mito_names, 
+        n_ambient=n_ambient,
+        n_hvgs=n_hvgs,
+        metrics=metrics,
+        thresh_methods=thresh_methods,
+        directions=directions,
+        alphas=[0.1],
+        max_iter=max_iter,
+        n_jobs=n_jobs,
+        seed=seed)
     
     # display coefficient plot
     coef_plt = dk.coef_plot(adata)
@@ -70,26 +82,66 @@ def index(request):
 
             # label data results
             context['title'] = 'Your Results'
-            context['qc_text'] = 'QC Plot'
 
             # checkbox bool
             form = CheckboxForm(request.POST or None)
             if form.is_valid():
-                if request.POST['qc_plot']:
+                if request.POST.get('qc_plot'):
                     # qc_plot checkbox was checked
+                    context['qc_text'] = 'QC Plot'
                     context['qc_plot'] = qc_plot(adata)
-                if request.POST['filter']:
+                if request.POST.get('dropkick'):
                     # filter checkbox was checked
+                    
                     # run dropkick
                     context['score_text'] = 'Score Plot'
                     context['coef_text'] = 'Coefficient Plot'
                     context['labels_text'] = 'Dropkick Labels'
-                    df, context['score_plot'], context['coef_plot'] = labels(adata)
-
+                    
+                    # default or custom settings
+                    #form_param = DropkickParam(request.POST or None)
+                    #if form_param.is_valid():
+                    min_genes = int(form.cleaned_data.get('min_genes', None))
+                    mito_names = form.cleaned_data.get('mito_names', None)
+                    n_ambient = int(form.cleaned_data.get('n_ambient', None))
+                    n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
+                    metrics = form.cleaned_data.get('metrics', None)
+                    thresh_methods = form.cleaned_data.get('thresh_methods', None)
+                    directions = form.cleaned_data.get('directions', None)
+                    alphas = form.cleaned_data.get('alphas', None) # how to make into list???
+                    max_iter = int(form.cleaned_data.get('max_iter', None))
+                    n_jobs = int(form.cleaned_data.get('n_jobs', None))
+                    seed = int(form.cleaned_data.get('seed', None))
+                    df, context['score_plot'], context['coef_plot'] = labels(
+                        adata, min_genes, mito_names, n_ambient, n_hvgs, metrics, thresh_methods, directions, alphas, max_iter, n_jobs, seed)
                     # convert dataframe to csv
                     fl_path = 'media/'
                     filename = uploaded_file.name + '_dropkick.csv'
                     df.to_csv('media/dropkick_filter.csv')
+                    
+#                     form_custom = CustomForm(request.POST)
+#                     if form_custom.is_valid():
+#                         if request.POST.get('default'):
+#                             # default selected
+#                             df, context['score_plot'], context['coef_plot'] = labels(adata, min_genes, mito_names)
+#                             # convert dataframe to csv
+#                             fl_path = 'media/'
+#                             filename = uploaded_file.name + '_dropkick.csv'
+#                             df.to_csv('media/dropkick_filter.csv')
+                        
+#                         if request.POST.get('custom'):
+#                             # custom selected
+#                             form = DropkickParam(request.POST or None)
+#                             if form.is_valid():
+#                                 min_genes = int(form.cleaned_data.get("min_genes"))
+#                                 mito_names = form.cleaned_data.get("mito_names")
+#                                 df, context['score_plot'], context['coef_plot'] = labels(adata, min_genes, mito_names)
+#                                 # convert dataframe to csv
+#                                 fl_path = 'media/'
+#                                 filename = uploaded_file.name + '_dropkick.csv'
+#                                 df.to_csv('media/dropkick_filter.csv')
+
+                        
 
             else:
                 form = CheckboxForm
@@ -108,7 +160,7 @@ def download_sample(request):
     file = open('media/t_4k_small_dropkick_scores.csv', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    response['Content-Disposition'] = 'attachment; filename="t_4k_small_dropkick_scores.csv"'
+    response['Content-Disposition'] = 'attachment; filename="sample_dropkick_scores.csv"'
     return response
 
 #     # Generate count of files
