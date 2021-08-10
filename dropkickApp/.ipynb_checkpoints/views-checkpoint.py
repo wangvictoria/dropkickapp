@@ -2,10 +2,12 @@ from django.shortcuts import render, get_object_or_404
 from dropkickApp.models import MyFile
 from django.views import generic
 from .forms import UploadFileForm, CheckboxForm, CustomForm
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, FileResponse
 from django.core.files.storage import FileSystemStorage
 import csv
-from django.http import FileResponse
+import os
+import zipfile
+from io import BytesIO
 
 import scanpy as sc; sc.set_figure_params(color_map="viridis", frameon=False)
 import dropkick as dk
@@ -22,6 +24,7 @@ def qc_plot(adata):
     # display chart
     buf = io.BytesIO()
     qc_plt.savefig(buf, format = 'png')
+    qc_plt.savefig('media/qc_plot.png')
     buf.seek(0)
     string = base64.b64encode(buf.read())
     uri = urllib.parse.quote(string)
@@ -46,6 +49,7 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, metrics, thresh_meth
     coef_plt = dk.coef_plot(adata)
     buf_coef = io.BytesIO()
     coef_plt.savefig(buf_coef, format = 'png')
+    coef_plt.savefig('media/coef_plot.png')
     buf_coef.seek(0)
     string_coef = base64.b64encode(buf_coef.read())
     uri_coef = urllib.parse.quote(string_coef)
@@ -55,11 +59,12 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, metrics, thresh_meth
     score_plt = dk.score_plot(adata_score)
     buf_score = io.BytesIO()
     score_plt.savefig(buf_score, format = 'png')
+    score_plt.savefig('media/score_plot.png')
     buf_score.seek(0)
     string_score = base64.b64encode(buf_score.read())
     uri_score = urllib.parse.quote(string_score)
     
-    return adata.obs, uri_score, uri_coef
+    return adata, uri_score, uri_coef
 
 def index(request):
     """View function for home page of site."""
@@ -117,43 +122,36 @@ def index(request):
                     # convert dataframe to csv
                     fl_path = 'media/'
                     filename = uploaded_file.name + '_dropkick.csv'
-                    df.to_csv('media/dropkick_filter.csv')
+                    df.obs.to_csv('media/dropkick_labels.csv')
                     
-#                     form_custom = CustomForm(request.POST)
-#                     if form_custom.is_valid():
-#                         if request.POST.get('default'):
-#                             # default selected
-#                             df, context['score_plot'], context['coef_plot'] = labels(adata, min_genes, mito_names)
-#                             # convert dataframe to csv
-#                             fl_path = 'media/'
-#                             filename = uploaded_file.name + '_dropkick.csv'
-#                             df.to_csv('media/dropkick_filter.csv')
-                        
-#                         if request.POST.get('custom'):
-#                             # custom selected
-#                             form = DropkickParam(request.POST or None)
-#                             if form.is_valid():
-#                                 min_genes = int(form.cleaned_data.get("min_genes"))
-#                                 mito_names = form.cleaned_data.get("mito_names")
-#                                 df, context['score_plot'], context['coef_plot'] = labels(adata, min_genes, mito_names)
-#                                 # convert dataframe to csv
-#                                 fl_path = 'media/'
-#                                 filename = uploaded_file.name + '_dropkick.csv'
-#                                 df.to_csv('media/dropkick_filter.csv')
-
-                        
-
+                    # convert to h5ad file
+                    adata.write('media/dropkick_filter.h5ad', compression='gzip')
+                    
+                    # delete file
+                    if os.path.exists('media/' + uploaded_file.name):
+                        os.remove('media/' + uploaded_file.name)
+                    
+                    # TODO: fix info hover, alpha lists, and validation check
+                    
             else:
                 form = CheckboxForm
         
     return render(request,'index.html', context)
 
-def download_file(request):
-    file = open('media/dropkick_filter.csv', 'rb') # Read the file in binary mode, this file must exist
+def download_csv(request):
+    file = open('media/dropkick_labels.csv', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
 
     # decide the file name
-    response['Content-Disposition'] = 'attachment; filename="dropkick_filter.csv"'
+    response['Content-Disposition'] = 'attachment; filename="dropkick_labels.csv"'
+    return response
+
+def download_h5ad(request):
+    file = open('media/dropkick_filter.h5ad', 'rb') # Read the file in binary mode, this file must exist
+    response = FileResponse(file)
+
+    # decide the file name
+    response['Content-Disposition'] = 'attachment; filename="dropkick_filter.h5ad"'
     return response
 
 def download_sample(request):
@@ -161,6 +159,99 @@ def download_sample(request):
     response = FileResponse(file)
     
     response['Content-Disposition'] = 'attachment; filename="sample_dropkick_scores.csv"'
+    return response
+
+def download_qc(request):
+    file = open('media/qc_plot.png', 'rb') # Read the file in binary mode, this file must exist
+    response = FileResponse(file)
+    
+    response['Content-Disposition'] = 'attachment; filename="qc_plot.png"'
+    return response
+
+def download_coef(request):
+    file = open('media/coef_plot.png', 'rb') # Read the file in binary mode, this file must exist
+    response = FileResponse(file)
+    
+    response['Content-Disposition'] = 'attachment; filename="coef_plot.png"'
+    return response
+
+def download_score(request):
+    file = open('media/score_plot.png', 'rb') # Read the file in binary mode, this file must exist
+    response = FileResponse(file)
+    
+    response['Content-Disposition'] = 'attachment; filename="score_plot.png"'
+    return response
+
+def download_all_no_qc(request):
+    # Files (local path) to put in the .zip
+    # FIXME: Change this (get paths from DB etc)
+    filenames = ["media/dropkick_labels.csv", "media/dropkick_filter.h5ad", "media/coef_plot.png", "media/score_plot.png"]
+    
+    # Folder name in ZIP archive which contains the above files
+    # E.g [thearchive.zip]/somefiles/file2.txt
+    # FIXME: Set this to something better
+    zip_subdir = "dropkick_output"
+    zip_filename = "%s.zip" % zip_subdir
+    
+    # Open StringIO to grab in-memory ZIP contents
+    s = BytesIO()
+
+    # The zip compressor
+    zf = zipfile.ZipFile(s, "w")
+
+    for fpath in filenames:
+        # Calculate path for file in zip
+        fdir, fname = os.path.split(fpath)
+        zip_path = os.path.join(zip_subdir, fname)
+
+        # Add file, at correct path
+        zf.write(fpath, zip_path)
+
+    # Must close zip for all contents to be written
+    zf.close()
+
+    # Grab ZIP file from in-memory, make response with correct MIME-type
+    response = HttpResponse(s.getvalue(), content_type = "application/x-zip-compressed")
+
+    # ..and correct content-disposition
+    response['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
+
+    return response
+
+def download_all(request):
+    # Files (local path) to put in the .zip
+    # FIXME: Change this (get paths from DB etc)
+    filenames = ["media/dropkick_labels.csv", "media/dropkick_filter.h5ad", "media/qc_plot.png", "media/coef_plot.png", "media/score_plot.png"]
+    
+    # Folder name in ZIP archive which contains the above files
+    # E.g [thearchive.zip]/somefiles/file2.txt
+    # FIXME: Set this to something better
+    zip_subdir = "dropkick_output"
+    zip_filename = "%s.zip" % zip_subdir
+    
+    # Open StringIO to grab in-memory ZIP contents
+    s = BytesIO()
+
+    # The zip compressor
+    zf = zipfile.ZipFile(s, "w")
+
+    for fpath in filenames:
+        # Calculate path for file in zip
+        fdir, fname = os.path.split(fpath)
+        zip_path = os.path.join(zip_subdir, fname)
+
+        # Add file, at correct path
+        zf.write(fpath, zip_path)
+
+    # Must close zip for all contents to be written
+    zf.close()
+
+    # Grab ZIP file from in-memory, make response with correct MIME-type
+    response = HttpResponse(s.getvalue(), content_type = "application/x-zip-compressed")
+
+    # ..and correct content-disposition
+    response['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
+
     return response
 
 #     # Generate count of files

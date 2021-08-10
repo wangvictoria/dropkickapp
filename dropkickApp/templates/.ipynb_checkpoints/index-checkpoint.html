@@ -120,22 +120,30 @@ theButton.addEventListener("click", () => {
 {% endif %}
 {% if qc_text %}
 <div class="subheading mb-5">{{ qc_text }}</div>
-<img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '500', width = '1000'>
-<br>
+<a class="btn btn-primary" href="{% url 'download_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> QC Plot</a><br>
+<img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '500', width = '1000'><br><br>
 {% endif %}
 {% if score_text %}
 <div class="subheading mb-5">{{ score_text }}</div>
-<img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '600', width = '600'>
-<br>
+<a class="btn btn-primary" href="{% url 'download_score' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Score Plot</a><br>
+<img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '600', width = '600'><br><br>
 {% endif %}
 {% if coef_plot %}
 <div class="subheading mb-5">{{ coef_text }}</div>
-<img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '600', width = '600'>
-<br>
+<a class="btn btn-primary" href="{% url 'download_coef' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Coefficient Plot</a><br>
+<img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '600', width = '600'><br><br>
 {% endif %}
 {% if labels_text %}
 <div class="subheading mb-5">{{ labels_text }}</div>
-<a class="btn btn-primary" href="{% url 'download' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download CSV</a>
+<a class="btn btn-primary" href="{% url 'download_csv' %}" style="color:#ffffff;"><i class="fas fa-download"></i> CSV</a>
+<br><br>
+<a class="btn btn-primary" href="{% url 'download_h5ad' %}" style="color:#ffffff;"><i class="fas fa-download"></i> AnnData Object</a>
+<br><br>
+{% if qc_text %}
+<a class="btn btn-success" href="{% url 'download_all' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download All Files</a>
+{% else %}
+<a class="btn btn-success" href="{% url 'download_all_no_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download All Files</a>
+{% endif %}
 <br>
 {% endif %}
 
