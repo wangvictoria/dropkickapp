@@ -11,7 +11,7 @@ from io import BytesIO
 
 import scanpy as sc; sc.set_figure_params(color_map="viridis", frameon=False)
 import dropkick as dk
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt; plt.switch_backend("Agg")
 import io, base64, urllib
 import numpy as np
 
@@ -30,19 +30,17 @@ def qc_plot(adata):
     uri = urllib.parse.quote(string)
     return uri
 
-def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, metrics, thresh_methods, directions, alphas, max_iter, n_jobs, seed):
+def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed):
     adata_model = dk.dropkick(
         adata, 
         min_genes=min_genes, 
         mito_names=mito_names, 
         n_ambient=n_ambient,
         n_hvgs=n_hvgs,
-        metrics=metrics,
         thresh_methods=thresh_methods,
-        directions=directions,
-        alphas=[0.1],
+        alphas=alphas,
         max_iter=max_iter,
-        n_jobs=n_jobs,
+        n_jobs=5,
         seed=seed)
     
     # display coefficient plot
@@ -104,21 +102,17 @@ def index(request):
                     context['labels_text'] = 'Dropkick Labels'
                     
                     # default or custom settings
-                    #form_param = DropkickParam(request.POST or None)
-                    #if form_param.is_valid():
                     min_genes = int(form.cleaned_data.get('min_genes', None))
                     mito_names = form.cleaned_data.get('mito_names', None)
                     n_ambient = int(form.cleaned_data.get('n_ambient', None))
                     n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
-                    metrics = form.cleaned_data.get('metrics', None)
                     thresh_methods = form.cleaned_data.get('thresh_methods', None)
-                    directions = form.cleaned_data.get('directions', None)
-                    alphas = form.cleaned_data.get('alphas', None) # how to make into list???
+                    alphas_list = form.cleaned_data.get('alphas', None).split(",")
+                    alphas = [float(x) for x in alphas_list]
                     max_iter = int(form.cleaned_data.get('max_iter', None))
-                    n_jobs = int(form.cleaned_data.get('n_jobs', None))
                     seed = int(form.cleaned_data.get('seed', None))
                     df, context['score_plot'], context['coef_plot'] = labels(
-                        adata, min_genes, mito_names, n_ambient, n_hvgs, metrics, thresh_methods, directions, alphas, max_iter, n_jobs, seed)
+                        adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed)
                     # convert dataframe to csv
                     fl_path = 'media/'
                     filename = uploaded_file.name + '_dropkick.csv'
@@ -131,7 +125,7 @@ def index(request):
                     if os.path.exists('media/' + uploaded_file.name):
                         os.remove('media/' + uploaded_file.name)
                     
-                    # TODO: fix info hover, alpha lists, and validation check
+                    # TODO: fix info hover, alpha lists, validation check, and align text fields
                     
             else:
                 form = CheckboxForm

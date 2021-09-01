@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        {% block title %}<title>Dropkick</title>{% endblock %}
+        {% block title %}<title>dropkick</title>{% endblock %}
         <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}" />
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
@@ -20,7 +20,7 @@
         <!-- Navigation-->
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
             <a class="navbar-brand js-scroll-trigger" href="#page-top">
-                <span class="d-block d-lg-none">Dropkick</span>
+                <span class="d-block d-lg-none"><strong>dropkick</strong></span>
                 <span class="d-none d-lg-block"><img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="{% static 'images/lab_logo.jpg' %}" alt="Lau Lab Logo" /></span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
@@ -39,16 +39,16 @@
             <section class="resume-section" id="home">
                 <div class="resume-section-content">
                     <h1 class="mb-0">
-                        Dropkick
+                        <span class="d-none d-lg-block"><img class="img-fluid mx-auto mb-2" src="{% static 'images/dropkick_logo.png' %}" alt="Dropkick Logo" style="height:130px;"/></span>
                         <span class="text-primary"><!-- Option to add more text here --></span>
                     </h1>
                     <div class="subheading mb-5">
-                        Automated cell filtering for single-cell RNA sequencing data.
+                        Automated cell filtering for single-cell RNA sequencing data
                         <a href="mailto:name@email.com"><!-- Option to insert email here --></a>
                     </div>
-                    <p class="lead mb-5">Dropkick works primarily with scanpy’s AnnData objects, and accepts input files in .h5ad or flat (.csv, .tsv) format. It also writes outputs to .h5ad files when called from the terminal.</p>
+                    <p class="lead mb-5"><strong>dropkick</strong> is a quality control and cell identification tool for single-cellRNA sequencing (scRNA-seq) data that works seamlessly with <a href="https://anndata.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer">scanpy’s AnnData objects</a> in Python. This tool accepts input files in compressed <code>.h5ad</code> or flat format (<code>.csv</code> or <code>.tsv</code>) with barcodes as rowsand genes as columns. Row and column headers should be present in flat files. Outputs will be written to a <code>.csv</code> table containing final <strong>dropkick</strong> scores and labels, as well as a compressed <code>.h5ad</code> file with original data for <a href="https://scanpy.readthedocs.io/en/stable/" target="_blank" rel="noopener noreferrer">scanpy</a> processing.</p>
                     <div class="subheading mb-5">
-                        Upload your file here.
+                        Upload your file here
                     </div>
                     {% block form %}{% endblock %}
                     <br><br>
@@ -68,27 +68,12 @@
                     <h2 class="mb-5">Background</h2>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
-                            <h3 class="mb-0">Genome Research</h3>
-                            <div class="subheading mb-3"><a href = "https://genome.cshlp.org/content/early/2021/04/09/gr.271908.120.abstract" target="_blank" rel="noopener noreferrer">Article</a></div>
-                            <p>A major challenge for droplet-based single-cell sequencing technologies is distinguishing true cells from uninformative barcodes in datasets with disparate library sizes confounded by high technical noise (i.e. batch-specific ambient RNA). We present dropkick, a fully automated software tool for quality control and filtering of single-cell RNA sequencing (scRNA-seq) data with a focus on excluding ambient barcodes and recovering real cells bordering the quality threshold. By automatically determining dataset-specific training labels based on predictive global heuristics, dropkick learns a gene-based representation of real cells and ambient noise, calculating a cell probability score for each barcode. Using simulated and real-world scRNA-seq data, we benchmarked dropkick against conventional thresholding approaches and EmptyDrops, a popular computational method, demonstrating greater recovery of rare cell types and exclusion of empty droplets and noisy, uninformative barcodes. We show for both low and high-background datasets that dropkick's weakly supervised model reliably learns which genes are enriched in ambient barcodes and draws a multidimensional boundary that is more robust to dataset-specific variation than existing filtering approaches. dropkick provides a fast, automated tool for reproducible cell identification from scRNA-seq data that is critical to downstream analysis and compatible with popular single-cell Python packages.</p>
+                            <h3 class="mb-0"><a href = "https://genome.cshlp.org/content/early/2021/04/09/gr.271908.120.abstract" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">Genome Research Article</a></h3><br>
+                            <p>A major challenge for droplet-based single-cell sequencing technologies is distinguishing true cells from uninformative barcodes in datasets with disparate library sizes confounded by high technical noise (i.e. batch-specific ambient RNA). We present <strong>dropkick</strong>, a fully automated software tool for quality control and filtering of single-cell RNA sequencing (scRNA-seq) data with a focus on excluding ambient barcodes and recovering real cells bordering the quality threshold. By automatically determining dataset-specific training labels based on predictive global heuristics, <strong>dropkick</strong> learns a gene-based representation of real cells and ambient noise, calculating a cell probability score for each barcode. Using simulated and real-world scRNA-seq data, we benchmarked <strong>dropkick</strong> against conventional thresholding approaches and EmptyDrops, a popular computational method, demonstrating greater recovery of rare cell types and exclusion of empty droplets and noisy, uninformative barcodes. We show for both low and high-background datasets that <strong>dropkick</strong>'s weakly supervised model reliably learns which genes are enriched in ambient barcodes and draws a multidimensional boundary that is more robust to dataset-specific variation than existing filtering approaches. <strong>dropkick</strong> provides a fast, automated tool for reproducible cell identification from scRNA-seq data that is critical to downstream analysis and compatible with popular single-cell Python packages.</p>
+                            
+                            <p>Full documentation is available at <a href ="https://kenlaulab.github.io/dropkick/" target="_blank" rel="noopener noreferrer">KenLauLab.github.io/<strong>dropkick</strong>.</a></p>
                         </div>
                         <div class="flex-shrink-0"><span class="text-primary"><!-- Option to insert date --></span></div>
-                    </div>
-                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
-                        <div class="flex-grow-1">
-                            <h3 class="mb-0">GitHub</h3>
-                            <div class="subheading mb-3"><a href = "https://github.com/KenLauLab/dropkick" target="_blank" rel="noopener noreferrer">Link</a></div>
-                            <p>Full documentation is available at <a href ="https://kenlaulab.github.io/dropkick/" target="_blank" rel="noopener noreferrer">KenLauLab.github.io/dropkick.</a></p>
-                        </div>
-                        <div class="flex-shrink-0"><span class="text-primary"><!-- Option to insert date --></span></div>
-                    </div>
-                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
-                        <div class="flex-grow-1">
-                            <h3 class="mb-0">Python</h3>
-                            <div class="subheading mb-3"><a href = "https://pypi.org/project/dropkick/" target="_blank" rel="noopener noreferrer">Package</a></div>
-                            <p><!-- Option to insert more text --></p>
-                        </div>
-                        <div class="flex-shrink-0"><span class="text-primary"><!-- Add date here --></span></div>
                     </div>
                     <div class="d-flex flex-column flex-md-row justify-content-between">
                         <div class="flex-grow-1">
@@ -108,45 +93,44 @@
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
                             
-                            <h3 class="mb-0">Sample Results</h3><br>
+                            <h3 class="mb-0">Sample Results for 4k Human T Cell Data</h3><br>
                             <div class="subheading mb-5">QC Plot</div>
-                            <p>We can see from the total counts profile (top) that this sample has relatively low background ("empty" droplets), as indicated by the steep dropoff in counts and genes around barcode 5,000.<br><br>
-
-The dropout rate distribution also looks pretty good, with a steep increase in dropout rate following the first few highly-expressed genes (MALAT1, RPS27, B2M).</p>
+                            <p>This human T cell dataset exhibits a high-quality, low-background scRNA-seq sample. The solid black curve in the log-rank plot on the left describes the total UMI counts per ranked barcode in the dataset. The green points show the corresponding number of genes detected in each barcode, while the blue and red points calculate the percentage of ambient and mitochondrial expression in each barcode as an indicator of quality.<br><br>
+                                The gene dropout plot on the right shows the percentage of barcodes in which each ranked gene is undetected. The bottom genes by dropout rate are flagged as "ambient" by <strong>dropkick</strong>.</p>
                             <img class="img-fluid" src="{% static 'images/qc_plot.png' %}" alt="QC Plot", height="500", width="1000" /><br><br>
                             <div class="subheading mb-5">Score Plot</div>
-                            <p>The score_plot function displays these barcodes in a scatter plot of <strong>ambient percentage</strong> (as calculated in the qc_summary plot above) versus <strong>total genes</strong> detected for each cell. The automated thresholds on the latter heuristic are overlayed to show the initial training labels given to the <strong>dropkick</strong> model.</p>
+                            <p>The <strong>dropkick</strong> score plot displays these barcodes in a scatter plot of <strong>ambient percentage</strong> (as calculated in the <strong>dropkick</strong> QC plot above) versus <strong>total genes</strong> detected for each cell. The automated thresholds on the latter heuristic are overlayed to show the initial training labels given to the <strong>dropkick</strong> model.</p>
                             <img class="img-fluid" src="{% static 'images/score_plot.png' %}" alt="Score Plot", height="600", width="600" /><br><br>
                             <div class="subheading mb-5">Coefficient Plot</div>
-                            <p>The coef_plot function will plot these <strong>coefficient values</strong> and <strong>cross validation (CV) scores</strong> for the tested regularization values of <strong>lambda</strong>. Top and bottom three genes by coefficient are notated for reference.</p>
+                            <p>The <strong>dropkick</strong> coefficient plot displays final model <strong>coefficient values</strong> and <strong>cross validation (CV) scores</strong> for the tested regularization values of <strong>lambda</strong>. Top and bottom three genes by coefficient are notated for reference.</p>
                             <img class="img-fluid" src="{% static 'images/coef_plot.png' %}" alt="Coefficient Plot", height="600", width="600" /><br><br>
-                            <div class="subheading mb-5">Dropkick Filter</div>
-                            <p>Running <strong>dropkick</strong> interactively adds the following attributes to the input AnnData object:<p>
+                            <div class="subheading mb-5"><strong>dropkick</strong> Outputs</div>
+                            <p><strong>dropkick</strong> returns an AnnData object with the following attributes. You may also download a table containing <strong>dropkick</strong> scores and labels for each barcode as a <code>.csv</code> file (see example below).<p>
                             <ul class = "roman">
-                                <li>.obs['dropkick_score']</li>
+                                <li><code>.obs['dropkick_score']</code></li>
                                 <ul class = "square">
                                     <li>Probability of being a real cell</li>
                                     <li>Values closer to 0 indicate empty droplets with high ambient RNA content</li>
                                 </ul>
-                                <li>.obs['dropkick_label']</li>
+                                <li><code>.obs['dropkick_label']</code></li>
                                 <ul class = "square">
                                     <li>Binary label generated by using cutoff of 0.5 on 'dropkick_score'</li>
-                                    <li>Dropkick's best estimate of a "good" dataset</li>
+                                    <li><strong>dropkick</strong>'s best estimate of a "good" dataset</li>
                                     <li>User is encouraged to adjust the cutoff according to whether they are more concerned with false negatives or false positives</li>
                                 </ul>
-                                <li>.obs[&#60;metrics&#62;]</li>
+                                <li><code>.obs[&#60;metrics&#62;]</code></li>
                                 <ul class = "square">
                                     <li>Metrics used for thresholding (metrics parameter, default ['arcsinh_n_genes_by_counts'], are kept</li>
                                 </ul>
-                                <li>.var['dropkick_coef']</li>
+                                <li><code>.var['dropkick_coef']</code></li>
                                 <ul class = "square">
                                     <li>Logistic regression coefficient values for each highly variable gene (HVG) determined by the <strong>dropkick</strong> pipeline</li>
                                 </ul>
-                                <li>.uns['dropkick_thresholds']</li>
+                                <li><code>.uns['dropkick_thresholds']</code></li>
                                 <ul class = "square">
                                     <li>Dictionary of global metrics thresholded by <strong>dropkick</strong> with the resulting threshold values and directions for good training cells</li>
                                 </ul>
-                                <li>.uns['dropkick_args']</li>
+                                <li><code>.uns['dropkick_args']</code></li>
                                 <ul class = "square">
                                     <li>Dictionary of all arguments used to run the pipeline</li>
                                 </ul>

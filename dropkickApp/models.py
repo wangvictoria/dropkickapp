@@ -56,7 +56,7 @@ class CustomModel(models.Model):
     metrics = models.CharField(max_length=100, verbose_name="metrics", default='arcsinh_n_genes_by_counts')
     thresh_methods = models.CharField(max_length=10, verbose_name="thresh_methods", choices=THRESH_METHODS, default='multiotsu')
     directions = models.CharField(max_length=10, verbose_name="directions", choices=DIRECTIONS, default='above')
-    alphas = models.DecimalField(max_digits=10, decimal_places=10, verbose_name="alphas", default='0.1')
+    alphas = models.CharField(max_length=10, verbose_name="alphas", default='[0.1]')
     max_iter = models.IntegerField(verbose_name="max_iter", default='2000')
     n_jobs = models.IntegerField(verbose_name="n_jobs", default='2')
     seed = models.IntegerField(verbose_name="seed", default='18')

@@ -32,11 +32,3 @@ window.addEventListener('DOMContentLoaded', event => {
     });
 
 });
-
-function customCheck() {
-    if (document.getElementById('custom').checked) {
-        document.getElementById('ifCustom').style.display = 'block';
-    }
-    else document.getElementById('ifCustom').style.display = 'none';
-
-}
