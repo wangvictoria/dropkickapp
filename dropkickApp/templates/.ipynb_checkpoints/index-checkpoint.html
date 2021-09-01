@@ -35,6 +35,8 @@ theButton.addEventListener("click", () => {
 
     <form method="post" enctype='multipart/form-data'>{% csrf_token %}
         
+        {{ form.non_field_errors }}
+        
     <!-- Name file
     <div style = "max-width:470px;">
     <input type = "text" style = "margin-left:20%;" placeholder = "Name" name = "name" />
@@ -44,14 +46,20 @@ theButton.addEventListener("click", () => {
         <!-- Upload file -->
          <div style = "max-width:470px;">
             <center> 
-               <input type = "file" style = "margin-left:0%;" placeholder = "Upload" name = "document" />
+                
+               <input type = "file" style = "margin-left:0%;" placeholder = "Upload" name = "document" /><br><br>
+                {% for message in messages %}
+                <div style="max-width:200px;">
+                <div class="alert alert-primary" style="margin-left:-20%;">
+                   {{ message }}
+                </div>
+                </div>
+                {% endfor %}
             </center>
          </div>
          <br>
         <!-- Checkbox -->
-        <table>
-        {{ form.as_table }}
-        </table>
+        
         <div style = "max-width:470px;"> <!-- max width: 470px -->
                 <input type="checkbox" style = "margin-left:20%;" id="qc_plot" name="qc_plot" value="qc_plot" checked>
                 <label for="qc_plot"> QC Plot</label><br>
@@ -66,6 +74,8 @@ theButton.addEventListener("click", () => {
                 <!-- Custom parameters -->
                 <div id="ifCustom" style="display:none">
                     
+                    
+                    
                     <label for="min_genes" style = "margin-left:30%;"> Minimum genes</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Threshold for minimum genes detected. Ignores all cells with less than 
         min_genes (dropkick label = 0)."></i>
@@ -79,12 +89,14 @@ theButton.addEventListener("click", () => {
                     
                     <label for="n_ambient" style = "margin-left:30%;"> Number of Ambient Genes</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Number of ambient genes to call. Top genes by cells."></i>
-                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='10' id='n_ambient' name='n_ambient'><br>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='10' id='n_ambient' name='n_ambient'>
+                    {{ form.n_ambient.errors }}<br>
                     
                     <label for="n_hvgs" style = "margin-left:30%;"> Number of HVGs</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Number of HVGs to calculate using Seurat method. If None, do not calculate 
         HVGs."></i>
-                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='2000' id='n_hvgs' name='n_hvgs'><br>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='2000' id='n_hvgs' name='n_hvgs'>
+                    {{ form.n_hvgs.errors }}<br>
                     
                     <!--<label for="metrics" style = "margin-left:30%;"> Metrics</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Name of column(s) to threshold from `adata.obs`."></i>

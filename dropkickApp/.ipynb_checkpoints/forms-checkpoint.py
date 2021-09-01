@@ -46,7 +46,9 @@ class CheckboxForm(forms.Form):
     custom = forms.BooleanField(label="custom", required=False)
     
     # parameters
-    min_genes = forms.CharField(max_length=10, label="min_genes", required=False, empty_value='50', initial='50')
+    min_genes = forms.CharField(max_length=10, label="min_genes", required=False, empty_value='50', initial='50', error_messages = {
+                 'integer':"Please enter a non-negative integer."
+                 })
     mito_names = forms.CharField(max_length=100, label="mito_names", required=False, empty_value='^mt-|^MT-', initial='^mt-')
     n_ambient = forms.CharField(max_length=10, label="n_ambient", required=False, empty_value='10', initial='10')
     n_hvgs = forms.CharField(max_length=10, label="n_hvgs", required=False, empty_value='2000', initial='2000')
@@ -62,6 +64,14 @@ class CheckboxForm(forms.Form):
         cd = self.cleaned_data
  
         validate_integer(cd.get('min_genes', None))
+            #self.add_error('min_genes', 'Please enter a non-negative integer.')
+        if validate_integer(cd.get('n_ambient', None)):
+            self.add_error('n_ambient', 'Please enter a non-negative integer.')
+        if validate_integer(cd.get('n_hvgs, None')):
+            self.add_error('n_hvgs', 'Please enter a non-negative integer.')
+        # HOW TO VALIDATE ALPHAS?
+        validate_integer(cd.get('max_iter', None))
+        validate_integer(cd.get('seed', None))
  
         # return any errors if found
         return cd

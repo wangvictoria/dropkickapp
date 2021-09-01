@@ -8,6 +8,8 @@ import csv
 import os
 import zipfile
 from io import BytesIO
+from django.core.exceptions import ValidationError
+from django.contrib import messages
 
 import scanpy as sc; sc.set_figure_params(color_map="viridis", frameon=False)
 import dropkick as dk
@@ -80,15 +82,28 @@ def index(request):
             fs = FileSystemStorage()
             fs.save(uploaded_file.name, uploaded_file)
 
-            # read data
-            adata = sc.read('media/' + uploaded_file.name)
-
-            # label data results
-            context['title'] = 'Your Results'
 
             # checkbox bool
             form = CheckboxForm(request.POST or None)
             if form.is_valid():
+                
+                # default or custom settings
+                min_genes = int(form.cleaned_data.get('min_genes', None))
+                mito_names = form.cleaned_data.get('mito_names', None)
+                n_ambient = int(form.cleaned_data.get('n_ambient', None))
+                n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
+                thresh_methods = form.cleaned_data.get('thresh_methods', None)
+                alphas_list = form.cleaned_data.get('alphas', None).split(",")
+                alphas = [float(x) for x in alphas_list]
+                max_iter = int(form.cleaned_data.get('max_iter', None))
+                seed = int(form.cleaned_data.get('seed', None))
+                
+                # read data
+                adata = sc.read('media/' + uploaded_file.name)
+                
+                # label data results
+                context['title'] = 'Your Results'
+                
                 if request.POST.get('qc_plot'):
                     # qc_plot checkbox was checked
                     context['qc_text'] = 'QC Plot'
@@ -101,16 +116,7 @@ def index(request):
                     context['coef_text'] = 'Coefficient Plot'
                     context['labels_text'] = 'Dropkick Labels'
                     
-                    # default or custom settings
-                    min_genes = int(form.cleaned_data.get('min_genes', None))
-                    mito_names = form.cleaned_data.get('mito_names', None)
-                    n_ambient = int(form.cleaned_data.get('n_ambient', None))
-                    n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
-                    thresh_methods = form.cleaned_data.get('thresh_methods', None)
-                    alphas_list = form.cleaned_data.get('alphas', None).split(",")
-                    alphas = [float(x) for x in alphas_list]
-                    max_iter = int(form.cleaned_data.get('max_iter', None))
-                    seed = int(form.cleaned_data.get('seed', None))
+                    
                     df, context['score_plot'], context['coef_plot'] = labels(
                         adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed)
                     # convert dataframe to csv
@@ -129,6 +135,8 @@ def index(request):
                     
             else:
                 form = CheckboxForm
+        else:
+            messages.error(request,'Please select a file.')
         
     return render(request,'index.html', context)
 
