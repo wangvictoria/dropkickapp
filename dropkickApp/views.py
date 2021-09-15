@@ -82,7 +82,6 @@ def index(request):
             fs = FileSystemStorage()
             fs.save(uploaded_file.name, uploaded_file)
 
-
             # checkbox bool
             form = CheckboxForm(request.POST or None)
             if form.is_valid():
@@ -126,17 +125,17 @@ def index(request):
                     
                     # convert to h5ad file
                     adata.write('media/dropkick_filter.h5ad', compression='gzip')
-                    
-                    # delete file
-                    if os.path.exists('media/' + uploaded_file.name):
-                        os.remove('media/' + uploaded_file.name)
-                    
-                    # TODO: fix info hover, alpha lists, validation check, and align text fields
-                    
             else:
-                form = CheckboxForm
+                messages.error(request, 'Please enter a non-negative integer.')
+                
+            # delete file
+            if os.path.exists('media/' + uploaded_file.name):
+                os.remove('media/' + uploaded_file.name)
         else:
             messages.error(request,'Please select a file.')
+    else:
+        form = CheckboxForm()
+        
         
     return render(request,'index.html', context)
 

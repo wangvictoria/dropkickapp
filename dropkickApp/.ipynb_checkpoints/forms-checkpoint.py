@@ -22,12 +22,15 @@ class UploadFileForm(forms.ModelForm):
         fields = ('name', 'upload',)
 
 class CheckboxForm(forms.Form):
-    def validate_int(value):
-        if not(value.isdigit()):
-            raise ValidationError(
-                _('%(value)s is not an integer'),
-                params={'value': value},
-            )
+#     def validate_int(value):
+#         if not(value.isdigit()):
+#             raise ValidationError(
+#                 _('%(value)s is not an integer'),
+#                 params={'value': value},
+#             )
+    def IntegerValidator(value):
+        if not(validate_integer(value)):
+            messages.error(value,'Please enter a non-negative integer.')
     def validate_dec(value):
         try:
             float(element)
@@ -46,25 +49,24 @@ class CheckboxForm(forms.Form):
     custom = forms.BooleanField(label="custom", required=False)
     
     # parameters
-    min_genes = forms.CharField(max_length=10, label="min_genes", required=False, empty_value='50', initial='50', error_messages = {
-                 'integer':"Please enter a non-negative integer."
-                 })
+    min_genes = forms.CharField(max_length=10, label="min_genes", required=False, empty_value='50', initial='50', validators=[validate_integer])
     mito_names = forms.CharField(max_length=100, label="mito_names", required=False, empty_value='^mt-|^MT-', initial='^mt-')
-    n_ambient = forms.CharField(max_length=10, label="n_ambient", required=False, empty_value='10', initial='10')
-    n_hvgs = forms.CharField(max_length=10, label="n_hvgs", required=False, empty_value='2000', initial='2000')
+    n_ambient = forms.CharField(max_length=10, label="n_ambient", required=False, empty_value='10', initial='10', validators=[validate_integer])
+    n_hvgs = forms.CharField(max_length=10, label="n_hvgs", required=False, empty_value='2000', initial='2000', validators=[validate_integer])
     #metrics = forms.CharField(max_length=100, label="metrics", required=False, empty_value='arcsinh_n_genes_by_counts', initial='arcsinh_n_genes_by_counts')
     thresh_methods = forms.ChoiceField(label='thresh_methods', choices=THRESH_METHODS, initial='multiotsu')
     #directions = forms.ChoiceField(label="directions", choices=DIRECTIONS, initial='above')
     alphas = forms.CharField(max_length=10, label="alphas", required=False, empty_value='0.1', initial='0.1')
-    max_iter = forms.CharField(max_length=10, label="max_iter", required=False, empty_value='2000', initial='2000')
+    max_iter = forms.CharField(max_length=10, label="max_iter", required=False, empty_value='2000', initial='2000', validators=[validate_integer])
     #n_jobs = forms.CharField(max_length=10, label="n_jobs", required=False, empty_value='2', initial='2')
-    seed = forms.CharField(max_length=10, label="seed", required=False, empty_value='18', initial='18')
+    seed = forms.CharField(max_length=10, label="seed", required=False, empty_value='18', initial='18', validators=[validate_integer])
     
-    def clean(self):
+    def cleaned_data(self):
         cd = self.cleaned_data
  
-        validate_integer(cd.get('min_genes', None))
-            #self.add_error('min_genes', 'Please enter a non-negative integer.')
+        if not(validate_integer(cd.get('min_genes'))):
+            self._errors['min_genes'] = self.error_class([
+                'Minimum 5 characters required'])
         if validate_integer(cd.get('n_ambient', None)):
             self.add_error('n_ambient', 'Please enter a non-negative integer.')
         if validate_integer(cd.get('n_hvgs, None')):
