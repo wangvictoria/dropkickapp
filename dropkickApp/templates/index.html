@@ -109,6 +109,7 @@ theButton.addEventListener("click", () => {
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Name of column(s) to threshold from `adata.obs`."></i>
                     <input type='text' style = "margin-left:1%;width:220px;height:25px" placeholder='arcsinh_n_genes_by_counts' id='metrics' name='metrics'><br>-->
                     
+                    
                     <label for="thresh_methods" style = "margin-left:30%;"> Threshold Methods</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Automated thresholding method(s) corresponding to each element in `metrics`."></i>
                     <select name="thresh_methods" id="thresh_methods">
@@ -117,6 +118,11 @@ theButton.addEventListener("click", () => {
                         <option value="li">Li</option>
                         <option value="mean">Mean</option>
                     </select><br>
+                    
+                    <label for="score_thresh" style = "margin-left:30%;"> Score Threshold</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Threshold in which to calculate th-__0wfe-f-ef0-wefwef"></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='0.5' id='score_thresh' name='score_thresh'>
+                    {{ form.score_thresh.errors }}<br>
                     
                     <!--<label for="directions" style = "margin-left:30%;"> Directions</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Which direction to keep during training (dropkick label = 1) corresponding 
@@ -170,6 +176,10 @@ theButton.addEventListener("click", () => {
 <h3 class="mb-0">{{ title }}</h3>
 <br>
 {% endif %}
+{% if counts_text %}
+<div class="subheading mb-5">{{ counts_text }}</div>
+<p>{{ counts }}</p><br>
+{% endif %}
 {% if qc_text %}
 <div class="subheading mb-5">{{ qc_text }}</div>
 <a class="btn btn-primary" href="{% url 'download_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> QC Plot</a><br>
@@ -187,7 +197,11 @@ theButton.addEventListener("click", () => {
 {% endif %}
 {% if labels_text %}
 <div class="subheading mb-5">{{ labels_text }}</div>
-<a class="btn btn-primary" href="{% url 'download_csv' %}" style="color:#ffffff;"><i class="fas fa-download"></i> CSV</a>
+<a class="btn btn-primary" href="{% url 'download_csv' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Labels CSV</a>
+<br><br>
+<a class="btn btn-primary" href="{% url 'download_counts' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Counts CSV</a>
+<br><br>
+<a class="btn btn-primary" href="{% url 'download_genes' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Genes CSV</a>
 <br><br>
 <a class="btn btn-primary" href="{% url 'download_h5ad' %}" style="color:#ffffff;"><i class="fas fa-download"></i> AnnData Object</a>
 <br><br>

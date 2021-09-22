@@ -28,6 +28,13 @@ class CheckboxForm(forms.Form):
 #                 _('%(value)s is not an integer'),
 #                 params={'value': value},
 #             )
+    def validate_integer(value):
+        if not(value.isnumeric()):
+            raise ValidationError(_('%(value)s is not a non-negative integer.'),
+            params={'value': value},)
+        else:
+            return value
+            
     def IntegerValidator(value):
         if not(validate_integer(value)):
             messages.error(value,'Please enter a non-negative integer.')
@@ -39,6 +46,7 @@ class CheckboxForm(forms.Form):
                 _('%(value)s is not a float'),
                 params={'value': value},
             )
+
     
     # qc plot and/or filter
     qc_plot = forms.BooleanField(label="qc_plot", required=False)
@@ -49,17 +57,18 @@ class CheckboxForm(forms.Form):
     custom = forms.BooleanField(label="custom", required=False)
     
     # parameters
-    min_genes = forms.CharField(max_length=10, label="min_genes", required=False, empty_value='50', initial='50', validators=[validate_integer])
+    min_genes = forms.CharField(max_length=10, label="min_genes", required=False, empty_value='50', initial='50')
     mito_names = forms.CharField(max_length=100, label="mito_names", required=False, empty_value='^mt-|^MT-', initial='^mt-')
-    n_ambient = forms.CharField(max_length=10, label="n_ambient", required=False, empty_value='10', initial='10', validators=[validate_integer])
-    n_hvgs = forms.CharField(max_length=10, label="n_hvgs", required=False, empty_value='2000', initial='2000', validators=[validate_integer])
+    n_ambient = forms.CharField(max_length=10, label="n_ambient", required=False, empty_value='10', initial='10')
+    n_hvgs = forms.CharField(max_length=10, label="n_hvgs", required=False, empty_value='2000', initial='2000')
     #metrics = forms.CharField(max_length=100, label="metrics", required=False, empty_value='arcsinh_n_genes_by_counts', initial='arcsinh_n_genes_by_counts')
     thresh_methods = forms.ChoiceField(label='thresh_methods', choices=THRESH_METHODS, initial='multiotsu')
+    score_thresh = forms.CharField(label='score_thresh', required=False, empty_value='0.5', initial='0.5')
     #directions = forms.ChoiceField(label="directions", choices=DIRECTIONS, initial='above')
-    alphas = forms.CharField(max_length=10, label="alphas", required=False, empty_value='0.1', initial='0.1')
-    max_iter = forms.CharField(max_length=10, label="max_iter", required=False, empty_value='2000', initial='2000', validators=[validate_integer])
+    alphas = forms.CharField(max_length=10, label="alphas", required=False, empty_value='0.1', initial='0.1') # FIX FOR MULTIPLE ALPHAS
+    max_iter = forms.CharField(max_length=10, label="max_iter", required=False, empty_value='2000', initial='2000')
     #n_jobs = forms.CharField(max_length=10, label="n_jobs", required=False, empty_value='2', initial='2')
-    seed = forms.CharField(max_length=10, label="seed", required=False, empty_value='18', initial='18', validators=[validate_integer])
+    seed = forms.CharField(max_length=10, label="seed", required=False, empty_value='18', initial='18')
     
     def cleaned_data(self):
         cd = self.cleaned_data
@@ -110,5 +119,5 @@ class CustomForm(forms.ModelForm):
     class Meta:
         model = CustomModel
         fields = ['qc_plot', 'dropkick', 'default', 'custom', 'min_genes', 'mito_names', 'n_ambient', 'n_hvgs', 'thresh_methods', 'alphas', 'max_iter', 'seed']
-        labels = {'qc_plot': _('QC Plot')}
-        help_texts = {'min_genes': _('Enter a non-negative integer.')}
+        #labels = {'qc_plot': _('QC Plot')}
+        #help_texts = {'min_genes': _('Enter a non-negative integer.')}

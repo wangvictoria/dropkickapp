@@ -16,6 +16,7 @@ import dropkick as dk
 import matplotlib.pyplot as plt; plt.switch_backend("Agg")
 import io, base64, urllib
 import numpy as np
+import pandas as pd
 
 
 def qc_plot(adata):
@@ -66,11 +67,22 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alph
     
     return adata, uri_score, uri_coef
 
+def check_int(value):
+    if not(value.isnumeric()):
+            raise ValidationError(_('%(value)s is not a non-negative integer.'),
+            params={'value': value},)
+    else:
+        return value
+
+def check_errors(params):
+    for x in params:
+        check_int(x)
+
 def index(request):
     """View function for home page of site."""
     
     context = {
-        'title': None,
+        'title': None, 'counts_text': None, 'counts': None,
         'qc_text': None, 'score_text': None, 'coef_text': None, 'labels_text': None,
         'qc_plot': None, 'score_plot': None, 'coef_plot': None, 'labels': None,
     }
@@ -79,58 +91,77 @@ def index(request):
     if request.method == 'POST':
         if 'document' in request.FILES:
             uploaded_file = request.FILES['document']
-            fs = FileSystemStorage()
-            fs.save(uploaded_file.name, uploaded_file)
+            if uploaded_file.name.endswith('.csv') or uploaded_file.name.endswith('.h5ad') or uploaded_file.name.endswith('.tsv'):
+                fs = FileSystemStorage()
+                fs.save(uploaded_file.name, uploaded_file)
+            
+                # checkbox bool
+                form = CheckboxForm(request.POST or None)
+                #params = [min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas_list, max_iter, seed]
+                if form.is_valid():
 
-            # checkbox bool
-            form = CheckboxForm(request.POST or None)
-            if form.is_valid():
-                
-                # default or custom settings
-                min_genes = int(form.cleaned_data.get('min_genes', None))
-                mito_names = form.cleaned_data.get('mito_names', None)
-                n_ambient = int(form.cleaned_data.get('n_ambient', None))
-                n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
-                thresh_methods = form.cleaned_data.get('thresh_methods', None)
-                alphas_list = form.cleaned_data.get('alphas', None).split(",")
-                alphas = [float(x) for x in alphas_list]
-                max_iter = int(form.cleaned_data.get('max_iter', None))
-                seed = int(form.cleaned_data.get('seed', None))
-                
-                # read data
-                adata = sc.read('media/' + uploaded_file.name)
-                
-                # label data results
-                context['title'] = 'Your Results'
-                
-                if request.POST.get('qc_plot'):
-                    # qc_plot checkbox was checked
-                    context['qc_text'] = 'QC Plot'
-                    context['qc_plot'] = qc_plot(adata)
-                if request.POST.get('dropkick'):
-                    # filter checkbox was checked
-                    
-                    # run dropkick
-                    context['score_text'] = 'Score Plot'
-                    context['coef_text'] = 'Coefficient Plot'
-                    context['labels_text'] = 'Dropkick Labels'
-                    
-                    
-                    df, context['score_plot'], context['coef_plot'] = labels(
-                        adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed)
-                    # convert dataframe to csv
-                    fl_path = 'media/'
-                    filename = uploaded_file.name + '_dropkick.csv'
-                    df.obs.to_csv('media/dropkick_labels.csv')
-                    
-                    # convert to h5ad file
-                    adata.write('media/dropkick_filter.h5ad', compression='gzip')
+                    # default or custom settings
+                    min_genes = int(form.cleaned_data.get('min_genes', None))
+                    mito_names = form.cleaned_data.get('mito_names', None)
+                    n_ambient = int(form.cleaned_data.get('n_ambient', None))
+                    n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
+                    thresh_methods = form.cleaned_data.get('thresh_methods', None)
+                    score_thresh = float(form.cleaned_data.get('score_thresh', None))
+                    alphas_list = form.cleaned_data.get('alphas', None).split(",")
+                    alphas = [float(x) for x in alphas_list]
+                    max_iter = int(form.cleaned_data.get('max_iter', None))
+                    seed = int(form.cleaned_data.get('seed', None))
+
+                    # read data
+                    adata = sc.read('media/' + uploaded_file.name)
+
+                    # label data results
+                    context['title'] = 'Your Results'
+
+                    if request.POST.get('qc_plot'):
+                        # qc_plot checkbox was checked
+                        context['qc_text'] = 'QC Plot'
+                        context['qc_plot'] = qc_plot(adata)
+                    if request.POST.get('dropkick'):
+                        # filter checkbox was checked
+
+
+                        # run dropkick
+                        context['counts_text'] = 'Number of Droplets'
+                        context['score_text'] = 'Score Plot'
+                        context['coef_text'] = 'Coefficient Plot'
+                        context['labels_text'] = 'Dropkick Labels'
+
+
+                        df, context['score_plot'], context['coef_plot'] = labels(
+                            adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed)
+
+                        df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
+
+                        context['counts'] = df.obs['dropkick_label'].value_counts()
+
+                        # convert dataframe to csv
+                        fl_path = 'media/'
+                        filename = uploaded_file.name + '_dropkick.csv'
+                        df.obs.to_csv('media/dropkick_labels.csv')
+
+                        # convert to h5ad file
+                        adata.write('media/dropkick_filter.h5ad', compression='gzip')
+
+                        # output counts and genes matrices
+                        data_out = adata[df.obs['dropkick_label']==True]
+                        data = pd.DataFrame(data_out.X.toarray())
+                        data.to_csv('media/dropkick_counts.csv', header=False, index=False)
+                        pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
+
+                else:
+                    messages.error(request, 'Please enter a non-negative integer.')
+
+                # delete file
+                if os.path.exists('media/' + uploaded_file.name):
+                    os.remove('media/' + uploaded_file.name)
             else:
-                messages.error(request, 'Please enter a non-negative integer.')
-                
-            # delete file
-            if os.path.exists('media/' + uploaded_file.name):
-                os.remove('media/' + uploaded_file.name)
+                messages.error(request,'File is not CSV, H5AD, or TSV type')
         else:
             messages.error(request,'Please select a file.')
     else:
@@ -153,6 +184,20 @@ def download_h5ad(request):
 
     # decide the file name
     response['Content-Disposition'] = 'attachment; filename="dropkick_filter.h5ad"'
+    return response
+
+def download_counts(request):
+    file = open('media/dropkick_counts.csv', 'rb')
+    response = FileResponse(file)
+    
+    response['Content-Disposition'] = 'attachment; filename="dropkick_counts.csv"'
+    return response
+
+def download_genes(request):
+    file = open('media/dropkick_genes.csv', 'rb')
+    response = FileResponse(file)
+    
+    response['Content-Disposition'] = 'attachment; filename="dropkick_genes.csv"'
     return response
 
 def download_sample(request):
@@ -254,42 +299,3 @@ def download_all(request):
     response['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
 
     return response
-
-#     # Generate count of files
-#     num_files = MyFile.objects.all().count()
-    
-#     context = {
-#         'num_files': num_files,
-#     }
-    
-#     results = run_script()
-#     context['results'] = results
-    
-    # Render the HTML template index.html with the data in the context variable
-    #return render(request, 'index.html', context=context)
-
-# def upload_file(request):
-#     if request.method == 'POST':
-#         uploaded_file = request.FILES['document']
-#         #print(uploaded_file.name)
-#         #print(uploaded_file.size)
-#         fs = FileSystemStorage()
-#         fs.save(uploaded_file.name, uploaded_file)
-#     return render(request,'upload.html')
-
-# def process(request):
-#     model = MyFile
-#     num_files = MyFile.objects.all().count()
-    
-#     context = {
-#         'num_files': num_files,
-#     }
-#     return render(request, 'process.html')
-
-
-# def run_script():
-#     adata = sc.read("../media/3907_S1_jointcluster.h5ad")
-#     # plot QC metrics
-#     adata = dk.recipe_dropkick(adata, n_hvgs=None, X_final="raw_counts")
-#     qc_plt = dk.qc_summary(adata)
-#     return render(request,'process.html')
