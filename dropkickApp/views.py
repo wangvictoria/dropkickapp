@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from dropkickApp.models import MyFile
 from django.views import generic
-from .forms import UploadFileForm, CheckboxForm, CustomForm
+from .forms import UploadFileForm, CheckboxForm, CustomForm, ScoreForm
 from django.http import HttpResponse, StreamingHttpResponse, FileResponse
 from django.core.files.storage import FileSystemStorage
 import csv
@@ -68,21 +68,22 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alph
     return adata, uri_score, uri_coef
 
 def check_int(value):
-    if not(value.isnumeric()):
-            raise ValidationError(_('%(value)s is not a non-negative integer.'),
-            params={'value': value},)
+    if isinstance(value, int):
+        return int(value)
     else:
-        return value
-
-def check_errors(params):
-    for x in params:
-        check_int(x)
+        messages.error(request, 'Please enter a non-negative integer.')
+        
+def check_int(value):
+    if isinstance(value, float):
+        return float(value)
+    else:
+        messages.error(request, 'Please enter a non-negative integer.')
 
 def index(request):
     """View function for home page of site."""
     
     context = {
-        'title': None, 'counts_text': None, 'counts': None,
+        'title': None, 'counts_text': None, 'counts_false': None, 'counts_true': None, 
         'qc_text': None, 'score_text': None, 'coef_text': None, 'labels_text': None,
         'qc_plot': None, 'score_plot': None, 'coef_plot': None, 'labels': None,
     }
@@ -127,7 +128,7 @@ def index(request):
 
 
                         # run dropkick
-                        context['counts_text'] = 'Number of Droplets'
+                        context['counts_text'] = 'Droplets Inventory'
                         context['score_text'] = 'Score Plot'
                         context['coef_text'] = 'Coefficient Plot'
                         context['labels_text'] = 'Dropkick Labels'
@@ -138,7 +139,8 @@ def index(request):
 
                         df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
 
-                        context['counts'] = df.obs['dropkick_label'].value_counts()
+                        context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
+                        context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
 
                         # convert dataframe to csv
                         fl_path = 'media/'
@@ -154,14 +156,11 @@ def index(request):
                         data.to_csv('media/dropkick_counts.csv', header=False, index=False)
                         pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
 
-                else:
-                    messages.error(request, 'Please enter a non-negative integer.')
-
                 # delete file
                 if os.path.exists('media/' + uploaded_file.name):
                     os.remove('media/' + uploaded_file.name)
             else:
-                messages.error(request,'File is not CSV, H5AD, or TSV type')
+                messages.error(request,'Please upload a file of CSV, H5AD, or TSV type')
         else:
             messages.error(request,'Please select a file.')
     else:
@@ -169,6 +168,15 @@ def index(request):
         
         
     return render(request,'index.html', context)
+
+def calc_score_thresh(request):
+    if request.method == 'POST':
+        form = ScoreForm(request.POST or None)
+        if form.is_valid():
+            score_thresh = form.cleaned_data.get('score_thresh', None)
+            print(score_thresh)
+    else:
+        form = ScoreForm()
 
 def download_csv(request):
     file = open('media/dropkick_labels.csv', 'rb') # Read the file in binary mode, this file must exist
@@ -231,7 +239,7 @@ def download_score(request):
 def download_all_no_qc(request):
     # Files (local path) to put in the .zip
     # FIXME: Change this (get paths from DB etc)
-    filenames = ["media/dropkick_labels.csv", "media/dropkick_filter.h5ad", "media/coef_plot.png", "media/score_plot.png"]
+    filenames = ["media/dropkick_labels.csv", "media/dropkick_counts.csv", "media/dropkick_genes.csv", "media/dropkick_filter.h5ad", "media/coef_plot.png", "media/score_plot.png"]
     
     # Folder name in ZIP archive which contains the above files
     # E.g [thearchive.zip]/somefiles/file2.txt
@@ -267,7 +275,7 @@ def download_all_no_qc(request):
 def download_all(request):
     # Files (local path) to put in the .zip
     # FIXME: Change this (get paths from DB etc)
-    filenames = ["media/dropkick_labels.csv", "media/dropkick_filter.h5ad", "media/qc_plot.png", "media/coef_plot.png", "media/score_plot.png"]
+    filenames = ["media/dropkick_labels.csv", "media/dropkick_counts.csv", "media/dropkick_genes.csv", "media/dropkick_filter.h5ad", "media/qc_plot.png", "media/coef_plot.png", "media/score_plot.png"]
     
     # Folder name in ZIP archive which contains the above files
     # E.g [thearchive.zip]/somefiles/file2.txt
