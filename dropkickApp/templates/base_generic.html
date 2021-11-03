@@ -47,18 +47,16 @@
                         <a href="mailto:name@email.com"><!-- Option to insert email here --></a>
                     </div>
                     <p class="lead mb-5"><strong>dropkick</strong> is a quality control and cell identification tool for single-cellRNA sequencing (scRNA-seq) data that works seamlessly with <a href="https://anndata.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer">scanpy’s AnnData objects</a> in Python. This tool accepts input files in compressed <code>.h5ad</code> or flat format (<code>.csv</code> or <code>.tsv</code>) with barcodes as rowsand genes as columns. Row and column headers should be present in flat files. Outputs will be written to a <code>.csv</code> table containing final <strong>dropkick</strong> scores and labels, as well as a compressed <code>.h5ad</code> file with original data for <a href="https://scanpy.readthedocs.io/en/stable/" target="_blank" rel="noopener noreferrer">scanpy</a> processing.</p>
-                    <div class="subheading mb-5">
-                        Upload your file here
-                    </div>
+                    
                     {% block form %}{% endblock %}
-                    <br><br>
+
                     <div class="social-icons">
                         <a class="social-icon" href="https://pypi.org/project/dropkick/" target="_blank" rel="noopener noreferrer"><i class="fab fa-python"></i></a>
                         <a class="social-icon" href="https://github.com/KenLauLab/dropkick" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
                         <a class="social-icon" href="https://twitter.com/KenLauLab" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
                         <a class="social-icon" href="https://www.mc.vanderbilt.edu/vumcdept/cellbio/laulab/" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i></a>
                     </div>
-                    {% block process %}{% endblock %}
+                    {% block results %}{% endblock %}
                 </div>
             </section>
             <hr class="m-0" />

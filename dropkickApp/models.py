@@ -39,7 +39,7 @@ class MyFile(models.Model):
         """Returns the url to access a detail record for this file."""
         return reverse('file-detail', args=[str(self.id)])
 
-class CustomModel(models.Model):
+class CustomParam(models.Model):
     # qc plot and/or filter
     qc_plot = models.BooleanField(verbose_name="qc_plot")
     dropkick = models.BooleanField(verbose_name="dropkick")
@@ -48,15 +48,21 @@ class CustomModel(models.Model):
     default = models.BooleanField(verbose_name="default")
     custom = models.BooleanField(verbose_name="custom")
     
+    # type of file
+    csv_bool = models.BooleanField(default=False)
+    h5ad_bool = models.BooleanField(default=False)
+    tsv_bool = models.BooleanField(default=False)
+    
     # parameters
-    min_genes = models.IntegerField(verbose_name="min_genes", default='50')
-    mito_names = models.CharField(max_length=100, verbose_name="mito_names", default='^mt-|^MT-')
-    n_ambient = models.IntegerField(verbose_name="n_ambient", default='10')
-    n_hvgs = models.IntegerField(verbose_name="n_hvgs", default='2000')
-    metrics = models.CharField(max_length=100, verbose_name="metrics", default='arcsinh_n_genes_by_counts')
-    thresh_methods = models.CharField(max_length=10, verbose_name="thresh_methods", choices=THRESH_METHODS, default='multiotsu')
-    directions = models.CharField(max_length=10, verbose_name="directions", choices=DIRECTIONS, default='above')
-    alphas = models.CharField(max_length=10, verbose_name="alphas", default='[0.1]')
-    max_iter = models.IntegerField(verbose_name="max_iter", default='2000')
-    n_jobs = models.IntegerField(verbose_name="n_jobs", default='2')
-    seed = models.IntegerField(verbose_name="seed", default='18')
+    min_genes = models.IntegerField(verbose_name="min_genes", default='50', blank=True, null=True)
+    mito_names = models.CharField(max_length=100, verbose_name="mito_names", default='^mt-|^MT-', blank=True, null=True)
+    n_ambient = models.IntegerField(verbose_name="n_ambient", default='10', blank=True, null=True)
+    n_hvgs = models.IntegerField(verbose_name="n_hvgs", default='2000', blank=True, null=True)
+    metrics = models.CharField(max_length=100, verbose_name="metrics", default='arcsinh_n_genes_by_counts', blank=True, null=True)
+    thresh_methods = models.CharField(max_length=10, verbose_name="thresh_methods", choices=THRESH_METHODS, default='multiotsu', blank=True, null=True)
+    score_thresh = models.DecimalField(decimal_places=5, max_digits=10, verbose_name="score_thresh", default=0.5, blank=True, null=True)
+    directions = models.CharField(max_length=10, verbose_name="directions", choices=DIRECTIONS, default='above', blank=True, null=True)
+    alphas = models.CharField(max_length=10, verbose_name="alphas", default='0.1', blank=True, null=True)
+    max_iter = models.IntegerField(verbose_name="max_iter", default='2000', blank=True, null=True)
+    n_jobs = models.IntegerField(verbose_name="n_jobs", default='5', blank=True, null=True)
+    seed = models.IntegerField(verbose_name="seed", default='18', blank=True, null=True)

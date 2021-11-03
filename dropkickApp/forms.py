@@ -1,8 +1,9 @@
 from django import forms
-from .models import MyFile, CustomModel
+from .models import MyFile, CustomParam
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import DecimalValidator, validate_integer
+from django.utils.datastructures import MultiValueDict
 
 THRESH_METHODS = [
     ('multiotsu', 'multiotsu'),
@@ -108,23 +109,23 @@ class CheckboxForm(forms.Form):
 #         return self.cleaned_data
 
 class CustomForm(forms.ModelForm):
-    def clean(self):
-        cd = self.cleaned_data
- 
-        validate_integer(cd.get('min_genes', None))
- 
-        # return any errors if found
-        return self.cleaned_data
+#     def clean(self):
+#         min_genes = self.cleaned_data['min_genes']
+#         if not min_genes:
+#             min_genes = 50
+
+#         return min_genes
     
     class Meta:
-        model = CustomModel
-        fields = ['qc_plot', 'dropkick', 'default', 'custom', 'min_genes', 'mito_names', 'n_ambient', 'n_hvgs', 'thresh_methods', 'alphas', 'max_iter', 'seed']
-        #labels = {'qc_plot': _('QC Plot')}
+        model = CustomParam
+        fields = ['qc_plot', 'dropkick', 'default', 'custom', 'min_genes', 'mito_names', 'n_ambient', 'n_hvgs', 'thresh_methods', 'score_thresh', 'alphas', 'max_iter', 'seed']
+        default={'min_genes': 50}
+        #labels = {'qc_plot': _('QC Plot'), 'min_genes': _('Minimum genes')}
         #help_texts = {'min_genes': _('Enter a non-negative integer.')}
 
 class ScoreForm(forms.Form):
     score_thresh = forms.DecimalField(label='score_thresh', min_value=0.0, max_value=1.0, max_digits=9,
                               widget=forms.NumberInput(attrs={'class': 'form-control'}),
-                              decimal_places=9, required=False,
+                              decimal_places=5, required=False,
                               disabled = False,
                               error_messages={'required': "Please enter a value between 0 and 1."})

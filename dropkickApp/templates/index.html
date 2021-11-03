@@ -32,10 +32,12 @@ theButton.addEventListener("click", () => {
 </script>
 
 <!-- Upload file -->
+    <div class="subheading mb-5">
+        Upload your file here
+    </div>
 
     <form method="post" enctype='multipart/form-data'>{% csrf_token %}
         
-        {{ form.non_field_errors }}
         
     <!-- Name file
     <div style = "max-width:470px;">
@@ -58,7 +60,7 @@ theButton.addEventListener("click", () => {
                 
                 
                 {% if form.errors %}
-                    <div class="alert alert-danger">
+                    <div class="alert alert-primary">
                         {{ form.errors }}
                     </div>
                 {% endif %}
@@ -83,11 +85,11 @@ theButton.addEventListener("click", () => {
                     
                     
                     
-                    <label for="min_genes" style = "margin-left:30%;"> Minimum genes</label>
+                    <label for="min_genes" style = "margin-left:30%;"> Minimum Genes</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Threshold for minimum genes detected. Ignores all cells with less than 
         min_genes (dropkick label = 0)."></i>
                     <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='50' id='min_genes' name='min_genes'>
-                    {{ form.min_genes.errors }}<br>
+                    <br>
                     
                     <label for="mito_names" style = "margin-left:30%;"> Mitochondria Names</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Substring encompassing mitochondrial gene names for calculation of mito 
@@ -97,13 +99,13 @@ theButton.addEventListener("click", () => {
                     <label for="n_ambient" style = "margin-left:30%;"> Number of Ambient Genes</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Number of ambient genes to call. Top genes by cells."></i>
                     <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='10' id='n_ambient' name='n_ambient'>
-                    {{ form.n_ambient.errors }}<br>
+                    <br>
                     
                     <label for="n_hvgs" style = "margin-left:30%;"> Number of HVGs</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Number of HVGs to calculate using Seurat method. If None, do not calculate 
         HVGs."></i>
                     <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='2000' id='n_hvgs' name='n_hvgs'>
-                    {{ form.n_hvgs.errors }}<br>
+                    <br>
                     
                     <!--<label for="metrics" style = "margin-left:30%;"> Metrics</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Name of column(s) to threshold from `adata.obs`."></i>
@@ -111,7 +113,7 @@ theButton.addEventListener("click", () => {
                     
                     
                     <label for="thresh_methods" style = "margin-left:30%;"> Threshold Methods</label>
-                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Automated thresholding method(s) corresponding to each element in `metrics`."></i>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Automated thresholding method."></i>
                     <select name="thresh_methods" id="thresh_methods">
                         <option value="multiotsu">Multiotsu</option>
                         <option value="otsu">Otsu</option>
@@ -120,9 +122,9 @@ theButton.addEventListener("click", () => {
                     </select><br>
                     
                     <label for="score_thresh" style = "margin-left:30%;"> Score Threshold</label>
-                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Threshold in which to calculate th-__0wfe-f-ef0-wefwef"></i>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Threshold of dropkick scores to label as True cells."></i>
                     <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='0.5' id='score_thresh' name='score_thresh'>
-                    {{ form.score_thresh.errors }}<br>
+                    <br>
                     
                     <!--<label for="directions" style = "margin-left:30%;"> Directions</label>
                     <i class="fas fa-info-circle" data-toggle="tooltip" title="Which direction to keep during training (dropkick label = 1) corresponding 
@@ -158,7 +160,7 @@ theButton.addEventListener("click", () => {
                   Upload
                </button>-->
                 <br>
-                <button class = "btn btn-primary" style = "color:#fff;margin-left:15%;" type = "submit" value = "upload" onclick="this.classList.toggle('btn--loading')">
+                <button class = "btn btn-primary" style = "color:#fff;margin-left:15%;" type = "submit" value = "upload" onclick="this.classList.toggle('btn--loading')" name="document">
                     <span class="btn__text"><i class="fas fa-upload"></i> Upload</span>
                </button>
                
@@ -166,51 +168,5 @@ theButton.addEventListener("click", () => {
          </div>
          
       </form>
-    <!-- Progress bar HTML -->
-{% endblock %}
-
-{% block process %}
-
-{% if title %}
-<br><br>
-<h3 class="mb-0">{{ title }}</h3>
-<br>
-{% endif %}
-{% if counts_text %}
-<div class="subheading mb-5">{{ counts_text }}</div>
-<p>{{ counts }}</p><br>
-{% endif %}
-{% if qc_text %}
-<div class="subheading mb-5">{{ qc_text }}</div>
-<a class="btn btn-primary" href="{% url 'download_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> QC Plot</a><br>
-<img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '500', width = '1000'><br><br>
-{% endif %}
-{% if score_text %}
-<div class="subheading mb-5">{{ score_text }}</div>
-<a class="btn btn-primary" href="{% url 'download_score' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Score Plot</a><br>
-<img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '600', width = '600'><br><br>
-{% endif %}
-{% if coef_plot %}
-<div class="subheading mb-5">{{ coef_text }}</div>
-<a class="btn btn-primary" href="{% url 'download_coef' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Coefficient Plot</a><br>
-<img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '600', width = '600'><br><br>
-{% endif %}
-{% if labels_text %}
-<div class="subheading mb-5">{{ labels_text }}</div>
-<a class="btn btn-primary" href="{% url 'download_csv' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Labels CSV</a>
-<br><br>
-<a class="btn btn-primary" href="{% url 'download_counts' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Counts CSV</a>
-<br><br>
-<a class="btn btn-primary" href="{% url 'download_genes' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Genes CSV</a>
-<br><br>
-<a class="btn btn-primary" href="{% url 'download_h5ad' %}" style="color:#ffffff;"><i class="fas fa-download"></i> AnnData Object</a>
-<br><br>
-{% if qc_text %}
-<a class="btn btn-success" href="{% url 'download_all' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download All Files</a>
-{% else %}
-<a class="btn btn-success" href="{% url 'download_all_no_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download All Files</a>
-{% endif %}
-<br>
-{% endif %}
-
+    <br><br>
 {% endblock %}
