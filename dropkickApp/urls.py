@@ -15,5 +15,6 @@ urlpatterns = [
     path('download_all_no_qc/', views.download_all_no_qc, name='download_all_no_qc'),
     path('download_all/', views.download_all, name='download_all'),
     #path('upload/', views.upload_file, name='upload'),
-    #path('process/', views.process, name='process'),
+    path('process/', views.process, name='process'),
+    path('score_thresh_submit/', views.calc_score_thresh, name='score_thresh_submit')
 ]

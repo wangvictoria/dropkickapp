@@ -1,5 +1,5 @@
-from django.shortcuts import render, get_object_or_404
-from dropkickApp.models import MyFile
+from django.shortcuts import render, get_object_or_404, redirect
+from dropkickApp.models import MyFile, CustomParam
 from django.views import generic
 from .forms import UploadFileForm, CheckboxForm, CustomForm, ScoreForm
 from django.http import HttpResponse, StreamingHttpResponse, FileResponse
@@ -67,116 +67,293 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alph
     
     return adata, uri_score, uri_coef
 
-def check_int(value):
-    if isinstance(value, int):
-        return int(value)
-    else:
-        messages.error(request, 'Please enter a non-negative integer.')
-        
-def check_int(value):
-    if isinstance(value, float):
-        return float(value)
-    else:
-        messages.error(request, 'Please enter a non-negative integer.')
-
 def index(request):
     """View function for home page of site."""
-    
-    context = {
-        'title': None, 'counts_text': None, 'counts_false': None, 'counts_true': None, 
-        'qc_text': None, 'score_text': None, 'coef_text': None, 'labels_text': None,
-        'qc_plot': None, 'score_plot': None, 'coef_plot': None, 'labels': None,
-    }
-    
+    form = CustomForm(request.POST or None, initial = {'min_genes': 50, 'mito_names': 'mt'})
+    model = CustomParam
     # upload file
     if request.method == 'POST':
         if 'document' in request.FILES:
-            uploaded_file = request.FILES['document']
-            if uploaded_file.name.endswith('.csv') or uploaded_file.name.endswith('.h5ad') or uploaded_file.name.endswith('.tsv'):
-                fs = FileSystemStorage()
-                fs.save(uploaded_file.name, uploaded_file)
+            if form.is_valid():
+                form.save()
+                instance = model.objects.last()
             
-                # checkbox bool
-                form = CheckboxForm(request.POST or None)
-                #params = [min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas_list, max_iter, seed]
-                if form.is_valid():
-
-                    # default or custom settings
-                    min_genes = int(form.cleaned_data.get('min_genes', None))
-                    mito_names = form.cleaned_data.get('mito_names', None)
-                    n_ambient = int(form.cleaned_data.get('n_ambient', None))
-                    n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
-                    thresh_methods = form.cleaned_data.get('thresh_methods', None)
-                    score_thresh = float(form.cleaned_data.get('score_thresh', None))
-                    alphas_list = form.cleaned_data.get('alphas', None).split(",")
-                    alphas = [float(x) for x in alphas_list]
-                    max_iter = int(form.cleaned_data.get('max_iter', None))
-                    seed = int(form.cleaned_data.get('seed', None))
-
-                    # read data
-                    adata = sc.read('media/' + uploaded_file.name)
-
-                    # label data results
-                    context['title'] = 'Your Results'
-
-                    if request.POST.get('qc_plot'):
-                        # qc_plot checkbox was checked
-                        context['qc_text'] = 'QC Plot'
-                        context['qc_plot'] = qc_plot(adata)
-                    if request.POST.get('dropkick'):
-                        # filter checkbox was checked
-
-
-                        # run dropkick
-                        context['counts_text'] = 'Droplets Inventory'
-                        context['score_text'] = 'Score Plot'
-                        context['coef_text'] = 'Coefficient Plot'
-                        context['labels_text'] = 'Dropkick Labels'
-
-
-                        df, context['score_plot'], context['coef_plot'] = labels(
-                            adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed)
-
-                        df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
-
-                        context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
-                        context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
-
-                        # convert dataframe to csv
-                        fl_path = 'media/'
-                        filename = uploaded_file.name + '_dropkick.csv'
-                        df.obs.to_csv('media/dropkick_labels.csv')
-
-                        # convert to h5ad file
-                        adata.write('media/dropkick_filter.h5ad', compression='gzip')
-
-                        # output counts and genes matrices
-                        data_out = adata[df.obs['dropkick_label']==True]
-                        data = pd.DataFrame(data_out.X.toarray())
-                        data.to_csv('media/dropkick_counts.csv', header=False, index=False)
-                        pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
-
-                # delete file
-                if os.path.exists('media/' + uploaded_file.name):
-                    os.remove('media/' + uploaded_file.name)
+                uploaded_file = request.FILES['document']
+                if uploaded_file.name.endswith('.csv'):
+                    fs = FileSystemStorage()
+                    fs.save(uploaded_file.name, uploaded_file)
+                    os.rename('media/' + uploaded_file.name, 'media/sample.csv')
+                    instance.csv_bool = True
+                    instance.save()
+                elif uploaded_file.name.endswith('.h5ad'):
+                    fs = FileSystemStorage()
+                    fs.save(uploaded_file.name, uploaded_file)
+                    os.rename('media/' + uploaded_file.name, 'media/sample.h5ad')
+                    instance.h5ad_bool = True
+                    instance.save()
+                elif uploaded_file.name.endswith('.tsv'):
+                    fs = FileSystemStorage()
+                    fs.save(uploaded_file.name, uploaded_file)
+                    os.rename('media/' + uploaded_file.name, 'media/sample.tsv')
+                    instance.tsv_bool = True
+                    instance.save()
+                else:
+                    messages.error(request,'Please upload a file of CSV, H5AD, or TSV type')
+            
+                                  
+                if not instance.min_genes:
+                    instance.min_genes = 50
+                    instance.save()
+                if not instance.mito_names:
+                    instance.mito_names = '^mt-|^MT-'
+                    instance.save()
+                if not instance.n_ambient:
+                    instance.n_ambient = 10
+                    instance.save()
+                if not instance.n_hvgs:
+                    instance.n_hvgs = 2000
+                    instance.save()
+                if not instance.score_thresh:
+                    instance.score_thresh = 0.5
+                    instance.save()
+                if not instance.alphas:
+                    instance.alphas = '0.1'
+                    instance.save()
+                if not instance.max_iter:
+                    instance.max_iter = 2000
+                    instance.save()
+                if not instance.seed:
+                    instance.seed = 18
+                    instance.save()
+                    
+                    
+                print('MIN GENESSSSSSSSS!!!!!!!!!!!!!!!')
+                print(instance.min_genes)
+                print(instance.mito_names)
+                print(instance.n_ambient)
+                print(instance.n_hvgs)
+                print(instance.score_thresh)
+                print(instance.alphas)
+                print(instance.max_iter)
+                print(instance.seed)
+                return redirect(process)
             else:
-                messages.error(request,'Please upload a file of CSV, H5AD, or TSV type')
+                form = CustomForm(request.POST or None)
+            
+#                 # checkbox bool
+#                 form = CheckboxForm(request.POST or None)
+#                 #params = [min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas_list, max_iter, seed]
+#                 if form.is_valid():
+
+#                     # default or custom settings
+#                     min_genes = int(form.cleaned_data.get('min_genes', None))
+#                     mito_names = form.cleaned_data.get('mito_names', None)
+#                     n_ambient = int(form.cleaned_data.get('n_ambient', None))
+#                     n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
+#                     thresh_methods = form.cleaned_data.get('thresh_methods', None)
+#                     score_thresh = float(form.cleaned_data.get('score_thresh', None))
+#                     alphas_list = form.cleaned_data.get('alphas', None).split(",")
+#                     alphas = [float(x) for x in alphas_list]
+#                     max_iter = int(form.cleaned_data.get('max_iter', None))
+#                     seed = int(form.cleaned_data.get('seed', None))
+
+#                     # read data
+#                     adata = sc.read('media/' + uploaded_file.name)
+
+#                     # label data results
+#                     context['title'] = 'Your Results'
+
+#                     if request.POST.get('qc_plot'):
+#                         # qc_plot checkbox was checked
+#                         context['qc_text'] = 'QC Plot'
+#                         context['qc_plot'] = qc_plot(adata)
+#                     if request.POST.get('dropkick'):
+#                         # filter checkbox was checked
+
+
+#                         # run dropkick
+#                         context['counts_text'] = 'Droplets Inventory'
+#                         context['score_text'] = 'Score Plot'
+#                         context['coef_text'] = 'Coefficient Plot'
+#                         context['labels_text'] = 'Dropkick Labels'
+
+
+#                         df, context['score_plot'], context['coef_plot'] = labels(
+#                             adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed)
+
+#                         df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
+
+#                         context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
+#                         context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
+
+#                         # convert dataframe to csv
+#                         fl_path = 'media/'
+#                         filename = uploaded_file.name + '_dropkick.csv'
+#                         df.obs.to_csv('media/dropkick_labels.csv')
+
+#                         # convert to h5ad file
+#                         adata.write('media/dropkick_filter.h5ad', compression='gzip')
+
+#                         # output counts and genes matrices
+#                         data_out = adata[df.obs['dropkick_label']==True]
+#                         data = pd.DataFrame(data_out.X.toarray())
+#                         data.to_csv('media/dropkick_counts.csv', header=False, index=False)
+#                         pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
+
+#                 # delete file
+#                 if os.path.exists('media/' + uploaded_file.name):
+#                     os.remove('media/' + uploaded_file.name)
         else:
             messages.error(request,'Please select a file.')
-    else:
-        form = CheckboxForm()
+#     else:
+#         form = CheckboxForm()
         
         
-    return render(request,'index.html', context)
+    return render(request,'index.html', context = {
+        'form': form
+    })
+
+def process(request):
+    context = {
+            'title': None, 'counts_text': None, 'counts_false': None, 'counts_true': None, 
+            'qc_text': None, 'score_text': None, 'coef_text': None, 'labels_text': None,
+            'qc_plot': None, 'score_plot': None, 'coef_plot': None, 'labels': None,
+        }
+    
+    model = CustomParam
+    instance = model.objects.last()
+    if instance.csv_bool:
+        adata = sc.read('media/sample.csv')
+    if instance.h5ad_bool:
+        adata = sc.read('media/sample.h5ad')
+    if instance.tsv_bool:
+        adata = sc.read('media/sample.tsv')
+    
+    # label data results
+    context['title'] = 'Your Results'
+    
+    if instance.qc_plot:
+        # qc_plot checkbox was checked
+        context['qc_text'] = 'QC Plot'
+        context['qc_plot'] = qc_plot(adata)
+        
+    if instance.dropkick:
+        # filter checkbox was checked
+
+        # run dropkick
+        context['counts_text'] = 'Droplets Inventory'
+        context['score_text'] = 'Score Plot'
+        context['coef_text'] = 'Coefficient Plot'
+        context['labels_text'] = 'Dropkick Labels'
+        
+        alphas_list = instance.alphas.split(',')
+        alphas = [float(x) for x in alphas_list]
+
+
+        df, context['score_plot'], context['coef_plot'] = labels(
+            adata, instance.min_genes, instance.mito_names, instance.n_ambient, instance.n_hvgs, instance.thresh_methods, alphas,
+            instance.max_iter, instance.seed)
+
+        df.obs['dropkick_label'] = df.obs['dropkick_score'] > instance.score_thresh
+
+        context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
+        context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
+
+        # convert dataframe to csv
+        fl_path = 'media/'
+        filename = 'sample_dropkick.csv'
+        df.obs.to_csv('media/dropkick_labels.csv')
+
+        # convert to h5ad file
+        adata.write('media/dropkick_filter.h5ad', compression='gzip')
+
+        # output counts and genes matrices
+        data_out = adata[df.obs['dropkick_label']==True]
+        data = pd.DataFrame(data_out.X.toarray())
+        data.to_csv('media/dropkick_counts.csv', header=False, index=False)
+        pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
+    
+#     if request.method == 'POST':
+        
+#         # checkbox bool
+#         form = CheckboxForm(initial={'min_genes': 50})
+#         #params = [min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas_list, max_iter, seed]
+#         if form.is_valid():
+
+#             # default or custom settings
+#             min_genes = int(form.cleaned_data.get('min_genes', None))
+#             mito_names = form.cleaned_data.get('mito_names', None)
+#             n_ambient = int(form.cleaned_data.get('n_ambient', None))
+#             n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
+#             thresh_methods = form.cleaned_data.get('thresh_methods', None)
+#             score_thresh = float(form.cleaned_data.get('score_thresh', None))
+#             alphas_list = form.cleaned_data.get('alphas', None).split(",")
+#             alphas = [float(x) for x in alphas_list]
+#             max_iter = int(form.cleaned_data.get('max_iter', None))
+#             seed = int(form.cleaned_data.get('seed', None))
+
+#             # read data
+#             adata = sc.read('media/sample')
+
+#             # label data results
+#             context['title'] = 'Your Results'
+
+#             if request.POST.get('qc_plot'):
+#                 # qc_plot checkbox was checked
+#                 context['qc_text'] = 'QC Plot'
+#                 context['qc_plot'] = qc_plot(adata)
+#             if request.POST.get('dropkick'):
+#                 # filter checkbox was checked
+
+#                 # run dropkick
+#                 context['counts_text'] = 'Droplets Inventory'
+#                 context['score_text'] = 'Score Plot'
+#                 context['coef_text'] = 'Coefficient Plot'
+#                 context['labels_text'] = 'Dropkick Labels'
+
+
+#                 df, context['score_plot'], context['coef_plot'] = labels(
+#                     adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed)
+
+#                 df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
+
+#                 context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
+#                 context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
+
+#                 # convert dataframe to csv
+#                 fl_path = 'media/'
+#                 filename = 'sample_dropkick.csv'
+#                 df.obs.to_csv('media/dropkick_labels.csv')
+
+#                 # convert to h5ad file
+#                 adata.write('media/dropkick_filter.h5ad', compression='gzip')
+
+#                 # output counts and genes matrices
+#                 data_out = adata[df.obs['dropkick_label']==True]
+#                 data = pd.DataFrame(data_out.X.toarray())
+#                 data.to_csv('media/dropkick_counts.csv', header=False, index=False)
+#                 pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
+
+#         # delete file
+#         if os.path.exists('media/sample'):
+#             os.remove('media/sample')
+    return render(request, 'process.html', context)
+
 
 def calc_score_thresh(request):
+    context = {
+        'score_thresh': None,
+    }
     if request.method == 'POST':
-        form = ScoreForm(request.POST or None)
-        if form.is_valid():
-            score_thresh = form.cleaned_data.get('score_thresh', None)
-            print(score_thresh)
-    else:
-        form = ScoreForm()
+        if 'score_thresh_submit' in request.POST:
+            form = ScoreForm(request.POST or None)
+            if form.is_valid():
+                score_thresh = form.cleaned_data.get('score_thresh', None)
+                print(score_thresh)
+                context['score_thresh'] = score_thresh
+        else:
+            form = ScoreForm()
+    return render(request, 'score_thresh.html', context)
 
 def download_csv(request):
     file = open('media/dropkick_labels.csv', 'rb') # Read the file in binary mode, this file must exist
