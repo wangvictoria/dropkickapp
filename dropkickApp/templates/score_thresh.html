@@ -1,8 +1,28 @@
 {% extends 'base_generic.html' %}
-{% block score_thresh %}
+{% block content %}
 
+
+<br><br>
+<h3 class="mb-0">{{ title }}</h3>
+<br>
 <p>{{ score_thresh }}</p>
+<div class="subheading mb-5">{{ counts_text }}</div>
+<p>Number of Empty Droplets: {{ counts_false }}</p><br>
+<p>Number of Real Cells: {{ counts_true }}</p><br>
 
-<h3>adlfajsd</h3>
+<a class="btn btn-primary" href="{% url 'download_csv' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Labels CSV</a>
+<br><br>
+<a class="btn btn-primary" href="{% url 'download_counts' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Counts CSV</a>
+<br><br>
+<a class="btn btn-primary" href="{% url 'download_genes' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Genes CSV</a>
+<br><br>
+<a class="btn btn-primary" href="{% url 'download_h5ad' %}" style="color:#ffffff;"><i class="fas fa-download"></i> AnnData Object</a>
+<br><br>
+<!-- {% if qc_text %}
+<a class="btn btn-success" href="{% url 'download_all' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download All Files</a>
+{% else %}
+<a class="btn btn-success" href="{% url 'download_all_no_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download All Files</a>
+{% endif %} -->
+<br>
 
 {% endblock %}

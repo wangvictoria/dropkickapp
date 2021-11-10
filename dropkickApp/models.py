@@ -66,3 +66,7 @@ class CustomParam(models.Model):
     max_iter = models.IntegerField(verbose_name="max_iter", default='2000', blank=True, null=True)
     n_jobs = models.IntegerField(verbose_name="n_jobs", default='5', blank=True, null=True)
     seed = models.IntegerField(verbose_name="seed", default='18', blank=True, null=True)
+    
+    score_thresh = models.DecimalField(max_digits=9,
+                              decimal_places=5, default=0.5, blank=True, null=True,
+                              error_messages={'required': "Please enter a value between 0 and 1."})

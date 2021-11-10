@@ -123,9 +123,7 @@ class CustomForm(forms.ModelForm):
         #labels = {'qc_plot': _('QC Plot'), 'min_genes': _('Minimum genes')}
         #help_texts = {'min_genes': _('Enter a non-negative integer.')}
 
-class ScoreForm(forms.Form):
-    score_thresh = forms.DecimalField(label='score_thresh', min_value=0.0, max_value=1.0, max_digits=9,
-                              widget=forms.NumberInput(attrs={'class': 'form-control'}),
-                              decimal_places=5, required=False,
-                              disabled = False,
-                              error_messages={'required': "Please enter a value between 0 and 1."})
+class ScoreForm(forms.ModelForm):
+    class Meta:
+        model = CustomParam
+        fields = ['score_thresh',]

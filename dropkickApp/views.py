@@ -127,15 +127,15 @@ def index(request):
                     instance.save()
                     
                     
-                print('MIN GENESSSSSSSSS!!!!!!!!!!!!!!!')
-                print(instance.min_genes)
-                print(instance.mito_names)
-                print(instance.n_ambient)
-                print(instance.n_hvgs)
-                print(instance.score_thresh)
-                print(instance.alphas)
-                print(instance.max_iter)
-                print(instance.seed)
+#                 print('MIN GENESSSSSSSSS!!!!!!!!!!!!!!!')
+#                 print(instance.min_genes)
+#                 print(instance.mito_names)
+#                 print(instance.n_ambient)
+#                 print(instance.n_hvgs)
+#                 print(instance.score_thresh)
+#                 print(instance.alphas)
+#                 print(instance.max_iter)
+#                 print(instance.seed)
                 return redirect(process)
             else:
                 form = CustomForm(request.POST or None)
@@ -231,7 +231,20 @@ def process(request):
     
     # label data results
     context['title'] = 'Your Results'
-    
+    if request.method == 'POST':
+        form = ScoreForm(request.POST or None)
+        model = CustomParam
+        if form.is_valid():
+            instance.score_thresh = form.cleaned_data.get('score_thresh')
+            instance.save()
+            print('FORM THRESH >>>>>>>>>>>>>>>>>>>> ')
+            print(form.cleaned_data.get('score_thresh'))
+            print('MODEL THRESH >>>>>>>>>>>>>>>>>>>> ')
+            print(instance.score_thresh)
+            return redirect(calc_score_thresh)
+                
+        else:
+            form = ScoreForm()
     if instance.qc_plot:
         # qc_plot checkbox was checked
         context['qc_text'] = 'QC Plot'
@@ -260,8 +273,6 @@ def process(request):
         context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
 
         # convert dataframe to csv
-        fl_path = 'media/'
-        filename = 'sample_dropkick.csv'
         df.obs.to_csv('media/dropkick_labels.csv')
 
         # convert to h5ad file
@@ -272,6 +283,8 @@ def process(request):
         data = pd.DataFrame(data_out.X.toarray())
         data.to_csv('media/dropkick_counts.csv', header=False, index=False)
         pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
+        
+    
     
 #     if request.method == 'POST':
         
@@ -342,17 +355,38 @@ def process(request):
 
 def calc_score_thresh(request):
     context = {
-        'score_thresh': None,
+        'score_thresh': None, 'title': None, 'qc_text': None, 'counts_text': None, 'counts_false': None, 'counts_true': None,
     }
-    if request.method == 'POST':
-        if 'score_thresh_submit' in request.POST:
-            form = ScoreForm(request.POST or None)
-            if form.is_valid():
-                score_thresh = form.cleaned_data.get('score_thresh', None)
-                print(score_thresh)
-                context['score_thresh'] = score_thresh
-        else:
-            form = ScoreForm()
+    form = ScoreForm(request.POST or None)
+    model = CustomParam
+    instance = model.objects.last()
+    
+    context['title'] = 'Your Results'
+    context['counts_text'] = 'Droplets Inventory'
+    score_thresh = instance.score_thresh
+    print(score_thresh)
+    context['score_thresh'] = score_thresh
+                
+    df = sc.read('media/dropkick_filter.h5ad')
+                
+    df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
+
+    context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
+    context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
+
+    # convert dataframe to csv
+    df.obs.to_csv('media/dropkick_labels.csv')
+
+    # convert to h5ad file
+    df.write('media/dropkick_filter.h5ad', compression='gzip')
+    
+#     if request.method == 'POST':
+#         if form.is_valid():
+#             model.objects.last().score_thresh = form.cleaned_data.get('score_thresh')
+#             model.objects.last().save()
+#             return redirect(calc_score_thresh)
+#         else:
+#             form = ScoreForm()
     return render(request, 'score_thresh.html', context)
 
 def download_csv(request):

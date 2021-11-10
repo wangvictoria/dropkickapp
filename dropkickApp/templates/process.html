@@ -1,43 +1,42 @@
 {% extends 'base_generic.html' %}
 
-{% block results %}
+{% block content %}
 
-{% if title %}
+
 <br><br>
 <h3 class="mb-0">{{ title }}</h3>
 <br>
-{% endif %}
-{% if counts_text %}
+
+
 <div class="subheading mb-5">{{ counts_text }}</div>
 <p>Number of Empty Droplets: {{ counts_false }}</p><br>
 <p>Number of Real Cells: {{ counts_true }}</p><br>
-{% endif %}
+
 {% if qc_text %}
 <div class="subheading mb-5">{{ qc_text }}</div>
 <a class="btn btn-primary" href="{% url 'download_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> QC Plot</a><br>
 <img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '500', width = '1000'><br><br>
 {% endif %}
-{% if score_text %}
+
 <div class="subheading mb-5">{{ score_text }}</div>
 <a class="btn btn-primary" href="{% url 'download_score' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Score Plot</a><br>
 <img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '600', width = '600'><br><br>
-{% endif %}
-{% if coef_plot %}
+
+
 <div class="subheading mb-5">{{ coef_text }}</div>
 <a class="btn btn-primary" href="{% url 'download_coef' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Coefficient Plot</a><br>
 <img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '600', width = '600'><br><br>
-{% endif %}
-{% if labels_text %}
+
+
 <div class="subheading mb-5">{{ labels_text }}</div>
 
 
 <!-- Dynamic Score Thresh Calculator -->
 <form method="post" enctype='multipart/form-data'>{% csrf_token %}
 <label for="score_thresh">Score Threshold </label>
-<input type="number" step="0.1" value="0.5" min="0.0" max="1.0" placeholder='0.5', id='score_thresh', name='score_thresh' /></form>
-<a class="btn btn-secondary" href="{% url 'calc_score_thresh' %}" name="score_thresh_submit">
-{% block score_thresh %}{% endblock %}<br><br>
-<p>{{ score_thresh }}<p>
+<input type="number" step="0.1" value="0.5" min="0.0" max="1.0" placeholder='0.5', id='score_thresh', name='score_thresh'>
+<button id="submit" type="submit" class="btn btn-secondary" name="submit" value="submit">Recalculate</button>
+</form><br>
 
 
 <a class="btn btn-primary" href="{% url 'download_csv' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Labels CSV</a>
@@ -54,6 +53,5 @@
 <a class="btn btn-success" href="{% url 'download_all_no_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download All Files</a>
 {% endif %}
 <br>
-{% endif %}
 
 {% endblock %}
