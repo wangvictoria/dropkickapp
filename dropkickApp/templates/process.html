@@ -1,16 +1,27 @@
 {% extends 'base_generic.html' %}
 
-{% block content %}
 
+{% block content %}
+<head>
+    {% load static %}
+</head>
+
+<script type="text/javascript">
+
+const theButton = document.querySelector(".btn");
+
+theButton.addEventListener("click", () => {
+    theButton.classList.add("btn--loading");
+});
+
+</script>
+
+<br><br>
+<a class="btn btn-primary" href="{% url 'index' %}" style="color:#ffffff;"><i class="fas fa-upload"></i> Upload a Different File</a><br>
 
 <br><br>
 <h3 class="mb-0">{{ title }}</h3>
 <br>
-
-
-<div class="subheading mb-5">{{ counts_text }}</div>
-<p>Number of Empty Droplets: {{ counts_false }}</p><br>
-<p>Number of Real Cells: {{ counts_true }}</p><br>
 
 {% if qc_text %}
 <div class="subheading mb-5">{{ qc_text }}</div>
@@ -18,6 +29,7 @@
 <img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '500', width = '1000'><br><br>
 {% endif %}
 
+{% if labels_text %}
 <div class="subheading mb-5">{{ score_text }}</div>
 <a class="btn btn-primary" href="{% url 'download_score' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Score Plot</a><br>
 <img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '600', width = '600'><br><br>
@@ -31,11 +43,17 @@
 <div class="subheading mb-5">{{ labels_text }}</div>
 
 
+<div class="subheading mb-5">{{ counts_text }}</div>
+<p>Current Score Threshold: {{ score_thresh }}</p>
+<p>Number of Empty Droplets: {{ counts_false }}</p>
+<p>Number of Real Cells: {{ counts_true }}</p><br>
+
 <!-- Dynamic Score Thresh Calculator -->
 <form method="post" enctype='multipart/form-data'>{% csrf_token %}
 <label for="score_thresh">Score Threshold </label>
 <input type="number" step="0.1" value="0.5" min="0.0" max="1.0" placeholder='0.5', id='score_thresh', name='score_thresh'>
-<button id="submit" type="submit" class="btn btn-secondary" name="submit" value="submit">Recalculate</button>
+<button id="submit" type="submit" class="btn btn-secondary" name="submit" value="submit" onclick="this.classList.toggle('btn--loading')">
+    <span class="btn__text">Recalculate</span></button>
 </form><br>
 
 
@@ -53,5 +71,6 @@
 <a class="btn btn-success" href="{% url 'download_all_no_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download All Files</a>
 {% endif %}
 <br>
+{% endif %}
 
 {% endblock %}

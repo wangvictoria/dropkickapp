@@ -67,6 +67,32 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alph
     
     return adata, uri_score, uri_coef
 
+def param_assignment(instance):
+    if not instance.min_genes:
+        instance.min_genes = 50
+        instance.save()
+    if not instance.mito_names:
+        instance.mito_names = '^mt-|^MT-'
+        instance.save()
+    if not instance.n_ambient:
+        instance.n_ambient = 10
+        instance.save()
+    if not instance.n_hvgs:
+        instance.n_hvgs = 2000
+        instance.save()
+    if not instance.score_thresh:
+        instance.score_thresh = 0.5
+        instance.save()
+    if not instance.alphas:
+        instance.alphas = '0.1'
+        instance.save()
+    if not instance.max_iter:
+        instance.max_iter = 2000
+        instance.save()
+    if not instance.seed:
+        instance.seed = 18
+        instance.save()
+
 def index(request):
     """View function for home page of site."""
     form = CustomForm(request.POST or None, initial = {'min_genes': 50, 'mito_names': 'mt'})
@@ -85,124 +111,29 @@ def index(request):
                     os.rename('media/' + uploaded_file.name, 'media/sample.csv')
                     instance.csv_bool = True
                     instance.save()
+                    param_assignment(instance)
+                    return redirect(process)
                 elif uploaded_file.name.endswith('.h5ad'):
                     fs = FileSystemStorage()
                     fs.save(uploaded_file.name, uploaded_file)
                     os.rename('media/' + uploaded_file.name, 'media/sample.h5ad')
                     instance.h5ad_bool = True
                     instance.save()
+                    param_assignment(instance)
+                    return redirect(process)
                 elif uploaded_file.name.endswith('.tsv'):
                     fs = FileSystemStorage()
                     fs.save(uploaded_file.name, uploaded_file)
                     os.rename('media/' + uploaded_file.name, 'media/sample.tsv')
                     instance.tsv_bool = True
                     instance.save()
+                    param_assignment(instance)
+                    return redirect(process)
                 else:
                     messages.error(request,'Please upload a file of CSV, H5AD, or TSV type')
-            
-                                  
-                if not instance.min_genes:
-                    instance.min_genes = 50
-                    instance.save()
-                if not instance.mito_names:
-                    instance.mito_names = '^mt-|^MT-'
-                    instance.save()
-                if not instance.n_ambient:
-                    instance.n_ambient = 10
-                    instance.save()
-                if not instance.n_hvgs:
-                    instance.n_hvgs = 2000
-                    instance.save()
-                if not instance.score_thresh:
-                    instance.score_thresh = 0.5
-                    instance.save()
-                if not instance.alphas:
-                    instance.alphas = '0.1'
-                    instance.save()
-                if not instance.max_iter:
-                    instance.max_iter = 2000
-                    instance.save()
-                if not instance.seed:
-                    instance.seed = 18
-                    instance.save()
-                    
-                    
-#                 print('MIN GENESSSSSSSSS!!!!!!!!!!!!!!!')
-#                 print(instance.min_genes)
-#                 print(instance.mito_names)
-#                 print(instance.n_ambient)
-#                 print(instance.n_hvgs)
-#                 print(instance.score_thresh)
-#                 print(instance.alphas)
-#                 print(instance.max_iter)
-#                 print(instance.seed)
-                return redirect(process)
+                
             else:
                 form = CustomForm(request.POST or None)
-            
-#                 # checkbox bool
-#                 form = CheckboxForm(request.POST or None)
-#                 #params = [min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas_list, max_iter, seed]
-#                 if form.is_valid():
-
-#                     # default or custom settings
-#                     min_genes = int(form.cleaned_data.get('min_genes', None))
-#                     mito_names = form.cleaned_data.get('mito_names', None)
-#                     n_ambient = int(form.cleaned_data.get('n_ambient', None))
-#                     n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
-#                     thresh_methods = form.cleaned_data.get('thresh_methods', None)
-#                     score_thresh = float(form.cleaned_data.get('score_thresh', None))
-#                     alphas_list = form.cleaned_data.get('alphas', None).split(",")
-#                     alphas = [float(x) for x in alphas_list]
-#                     max_iter = int(form.cleaned_data.get('max_iter', None))
-#                     seed = int(form.cleaned_data.get('seed', None))
-
-#                     # read data
-#                     adata = sc.read('media/' + uploaded_file.name)
-
-#                     # label data results
-#                     context['title'] = 'Your Results'
-
-#                     if request.POST.get('qc_plot'):
-#                         # qc_plot checkbox was checked
-#                         context['qc_text'] = 'QC Plot'
-#                         context['qc_plot'] = qc_plot(adata)
-#                     if request.POST.get('dropkick'):
-#                         # filter checkbox was checked
-
-
-#                         # run dropkick
-#                         context['counts_text'] = 'Droplets Inventory'
-#                         context['score_text'] = 'Score Plot'
-#                         context['coef_text'] = 'Coefficient Plot'
-#                         context['labels_text'] = 'Dropkick Labels'
-
-
-#                         df, context['score_plot'], context['coef_plot'] = labels(
-#                             adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed)
-
-#                         df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
-
-#                         context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
-#                         context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
-
-#                         # convert dataframe to csv
-#                         fl_path = 'media/'
-#                         filename = uploaded_file.name + '_dropkick.csv'
-#                         df.obs.to_csv('media/dropkick_labels.csv')
-
-#                         # convert to h5ad file
-#                         adata.write('media/dropkick_filter.h5ad', compression='gzip')
-
-#                         # output counts and genes matrices
-#                         data_out = adata[df.obs['dropkick_label']==True]
-#                         data = pd.DataFrame(data_out.X.toarray())
-#                         data.to_csv('media/dropkick_counts.csv', header=False, index=False)
-#                         pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
-
-#                 # delete file
-#                 if os.path.exists('media/' + uploaded_file.name):
-#                     os.remove('media/' + uploaded_file.name)
         else:
             messages.error(request,'Please select a file.')
 #     else:
@@ -237,10 +168,6 @@ def process(request):
         if form.is_valid():
             instance.score_thresh = form.cleaned_data.get('score_thresh')
             instance.save()
-            print('FORM THRESH >>>>>>>>>>>>>>>>>>>> ')
-            print(form.cleaned_data.get('score_thresh'))
-            print('MODEL THRESH >>>>>>>>>>>>>>>>>>>> ')
-            print(instance.score_thresh)
             return redirect(calc_score_thresh)
                 
         else:
@@ -266,6 +193,8 @@ def process(request):
         df, context['score_plot'], context['coef_plot'] = labels(
             adata, instance.min_genes, instance.mito_names, instance.n_ambient, instance.n_hvgs, instance.thresh_methods, alphas,
             instance.max_iter, instance.seed)
+        
+        context['score_thresh'] = instance.score_thresh
 
         df.obs['dropkick_label'] = df.obs['dropkick_score'] > instance.score_thresh
 
@@ -283,73 +212,7 @@ def process(request):
         data = pd.DataFrame(data_out.X.toarray())
         data.to_csv('media/dropkick_counts.csv', header=False, index=False)
         pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
-        
-    
-    
-#     if request.method == 'POST':
-        
-#         # checkbox bool
-#         form = CheckboxForm(initial={'min_genes': 50})
-#         #params = [min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas_list, max_iter, seed]
-#         if form.is_valid():
 
-#             # default or custom settings
-#             min_genes = int(form.cleaned_data.get('min_genes', None))
-#             mito_names = form.cleaned_data.get('mito_names', None)
-#             n_ambient = int(form.cleaned_data.get('n_ambient', None))
-#             n_hvgs = int(form.cleaned_data.get('n_hvgs', None))
-#             thresh_methods = form.cleaned_data.get('thresh_methods', None)
-#             score_thresh = float(form.cleaned_data.get('score_thresh', None))
-#             alphas_list = form.cleaned_data.get('alphas', None).split(",")
-#             alphas = [float(x) for x in alphas_list]
-#             max_iter = int(form.cleaned_data.get('max_iter', None))
-#             seed = int(form.cleaned_data.get('seed', None))
-
-#             # read data
-#             adata = sc.read('media/sample')
-
-#             # label data results
-#             context['title'] = 'Your Results'
-
-#             if request.POST.get('qc_plot'):
-#                 # qc_plot checkbox was checked
-#                 context['qc_text'] = 'QC Plot'
-#                 context['qc_plot'] = qc_plot(adata)
-#             if request.POST.get('dropkick'):
-#                 # filter checkbox was checked
-
-#                 # run dropkick
-#                 context['counts_text'] = 'Droplets Inventory'
-#                 context['score_text'] = 'Score Plot'
-#                 context['coef_text'] = 'Coefficient Plot'
-#                 context['labels_text'] = 'Dropkick Labels'
-
-
-#                 df, context['score_plot'], context['coef_plot'] = labels(
-#                     adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed)
-
-#                 df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
-
-#                 context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
-#                 context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
-
-#                 # convert dataframe to csv
-#                 fl_path = 'media/'
-#                 filename = 'sample_dropkick.csv'
-#                 df.obs.to_csv('media/dropkick_labels.csv')
-
-#                 # convert to h5ad file
-#                 adata.write('media/dropkick_filter.h5ad', compression='gzip')
-
-#                 # output counts and genes matrices
-#                 data_out = adata[df.obs['dropkick_label']==True]
-#                 data = pd.DataFrame(data_out.X.toarray())
-#                 data.to_csv('media/dropkick_counts.csv', header=False, index=False)
-#                 pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
-
-#         # delete file
-#         if os.path.exists('media/sample'):
-#             os.remove('media/sample')
     return render(request, 'process.html', context)
 
 
@@ -360,33 +223,44 @@ def calc_score_thresh(request):
     form = ScoreForm(request.POST or None)
     model = CustomParam
     instance = model.objects.last()
-    
     context['title'] = 'Your Results'
-    context['counts_text'] = 'Droplets Inventory'
-    score_thresh = instance.score_thresh
-    print(score_thresh)
-    context['score_thresh'] = score_thresh
+    if request.method == 'POST':
+        if form.is_valid():
+            instance.score_thresh = form.cleaned_data.get('score_thresh')
+            instance.save()
+            return redirect(calc_score_thresh)
                 
-    df = sc.read('media/dropkick_filter.h5ad')
-                
-    df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
+        else:
+            form = ScoreForm()
+    if instance.qc_plot:
+        # qc_plot checkbox was checked
+        context['qc_text'] = 'QC Plot'
+        
+    if instance.dropkick:
+        # filter checkbox was checked
 
-    context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
-    context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
-
-    # convert dataframe to csv
-    df.obs.to_csv('media/dropkick_labels.csv')
-
-    # convert to h5ad file
-    df.write('media/dropkick_filter.h5ad', compression='gzip')
+        # run dropkick
+        context['counts_text'] = 'Droplets Inventory'
+        context['score_text'] = 'Score Plot'
+        context['coef_text'] = 'Coefficient Plot'
+        context['labels_text'] = 'Dropkick Labels'
     
-#     if request.method == 'POST':
-#         if form.is_valid():
-#             model.objects.last().score_thresh = form.cleaned_data.get('score_thresh')
-#             model.objects.last().save()
-#             return redirect(calc_score_thresh)
-#         else:
-#             form = ScoreForm()
+        score_thresh = instance.score_thresh
+        context['score_thresh'] = score_thresh
+                
+        df = sc.read('media/dropkick_filter.h5ad')
+                
+        df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
+
+        context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
+        context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
+        
+
+        # convert dataframe to csv
+        df.obs.to_csv('media/dropkick_labels.csv')
+
+        # convert to h5ad file
+        df.write('media/dropkick_filter.h5ad', compression='gzip')
     return render(request, 'score_thresh.html', context)
 
 def download_csv(request):
